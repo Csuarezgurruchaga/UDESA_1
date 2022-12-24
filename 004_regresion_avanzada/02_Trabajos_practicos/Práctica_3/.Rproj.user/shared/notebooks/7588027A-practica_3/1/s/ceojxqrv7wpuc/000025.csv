@@ -1,0 +1,2 @@
+"0","mammals = as.data.frame(na.omit(mammals))"
+"0","head(mammals)"

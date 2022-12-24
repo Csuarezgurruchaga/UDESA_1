@@ -1,0 +1,2 @@
+"0","best_orphan_model_h = lm(childHeight ~ midparentHeight, data = AlturaGalton_h)"
+"0","best_orphan_model_m = lm(childHeight ~ midparentHeight, data = AlturaGalton_m)"

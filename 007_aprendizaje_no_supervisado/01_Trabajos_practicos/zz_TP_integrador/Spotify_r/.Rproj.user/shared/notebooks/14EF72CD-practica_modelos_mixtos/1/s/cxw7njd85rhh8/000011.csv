@@ -1,0 +1,1 @@
+"0","plot(densidad_gmm_no_gaussean, what=""density"", data=data, col = ""blue"")"

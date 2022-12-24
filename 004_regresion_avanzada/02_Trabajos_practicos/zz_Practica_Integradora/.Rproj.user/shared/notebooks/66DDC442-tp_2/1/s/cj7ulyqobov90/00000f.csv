@@ -1,0 +1,5 @@
+"0","trees$Volume = log(trees$Volume)"
+"0",""
+"0","trees$Girth = log(trees$Girth)"
+"0",""
+"0","trees$Height = log(trees$Height)"

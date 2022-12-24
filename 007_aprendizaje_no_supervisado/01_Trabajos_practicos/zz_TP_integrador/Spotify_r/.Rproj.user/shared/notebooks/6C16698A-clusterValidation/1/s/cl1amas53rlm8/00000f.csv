@@ -1,0 +1,4 @@
+"0","## Dataset Iris"
+"0","data(iris)"
+"0","df = iris[,-5]"
+"0","fviz_dist(dist(df), show_labels = FALSE) + labs(title = ""Iris data"")"

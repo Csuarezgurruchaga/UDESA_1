@@ -1,0 +1,3 @@
+"0","hist(fuel$FuelC, col = ""brown"","
+"0","                 main = ""DISTRIBUCION VARIABLE TARGET"","
+"0","                 xlab = ""GALONES DE COMBUSTIBLE VENDIDO"")"

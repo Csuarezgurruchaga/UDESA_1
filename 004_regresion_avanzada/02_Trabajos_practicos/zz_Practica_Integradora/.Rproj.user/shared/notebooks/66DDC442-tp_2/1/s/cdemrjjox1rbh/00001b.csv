@@ -1,0 +1,4 @@
+"0",""
+"0","legend(""topright"", "
+"0","       c(""INTERVALO DE CONFIANZA 95%"", ""INTERVALO DE PREDICCION 95%""), "
+"0","       fill = c(""darkblue"", ""darkgreen""), cex = 0.8)"

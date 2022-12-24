@@ -1,0 +1,3 @@
+"0","florida <- read.table(""~/Desktop/UDESA/004_regresion_avanzada/01_Clases/Práctica_1/florida.txt"", header=TRUE, quote=""\"""")"
+"0",""
+"0","head(florida)"

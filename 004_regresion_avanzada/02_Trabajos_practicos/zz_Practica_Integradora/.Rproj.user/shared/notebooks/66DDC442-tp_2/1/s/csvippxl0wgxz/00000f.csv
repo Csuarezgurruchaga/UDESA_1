@@ -1,0 +1,8 @@
+"0","water <- read.csv(""~/Desktop/UDESA/004_regresion_avanzada/02_Trabajos_practicos/Práctica_2/water.txt"", sep="""")"
+"0",""
+"0","#Vamos a convertir la variables explicativas de pulgadas a metros y el target a metros cubicos"
+"0",""
+"0","water[, 2:7] = water[, 2:7] * 0.0254"
+"0","water[, 8] = water[, 8]*1233.4818375475"
+"0","# head(water)"
+"0",""

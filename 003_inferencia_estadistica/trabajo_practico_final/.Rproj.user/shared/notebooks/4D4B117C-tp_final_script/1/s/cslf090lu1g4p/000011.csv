@@ -1,0 +1,8 @@
+"0",""
+"0","(proporcion_rechazos_h0 <- mean(replicate(10000, "
+"0","                                         rechazaHO(escenario1(mus = c(0, 0, 0), "
+"0","                                                                J = 20)))))"
+"1","[1]"
+"1"," 0.1012"
+"1","
+"

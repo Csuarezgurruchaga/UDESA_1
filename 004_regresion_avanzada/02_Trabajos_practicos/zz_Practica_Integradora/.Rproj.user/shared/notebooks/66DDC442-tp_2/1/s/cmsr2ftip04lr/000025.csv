@@ -1,0 +1,4 @@
+"0",""
+"0","# Intervalos de prediccion"
+"0","lines(x = data_midparentHeight$midparentHeight, "
+"0","      y = prediccion_height_m[, 2], col = ""gold"", lwd = 3)"

@@ -1,0 +1,6 @@
+"0",""
+"0","points(y = summary_life_2$coefficients[1] + summary_life_2$coefficients[2] * "
+"0","        esperanza2015$child.2015 + summary_life_2$coefficients[3] * "
+"0","        (esperanza2015$child.2015^2), x = esperanza2015$child.2015, "
+"0","        col = ""green"", xlab = ""Tasa de mortalidad ^ 2"", "
+"0","        ylab = ""Esperanza de vida"", lwd = 2)"

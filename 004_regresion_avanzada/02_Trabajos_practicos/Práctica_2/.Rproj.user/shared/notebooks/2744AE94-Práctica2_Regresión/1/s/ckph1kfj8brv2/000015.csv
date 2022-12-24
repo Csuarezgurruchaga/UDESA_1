@@ -1,0 +1,5 @@
+"0","library(ellipse)"
+"0","plot(ellipse(lm.fuel, which=c(2,3), level=0.95))"
+"2","Error in ellipse(lm.fuel, which = c(2, 3), level = 0.95) : 
+  center must be a vector of length 2
+"

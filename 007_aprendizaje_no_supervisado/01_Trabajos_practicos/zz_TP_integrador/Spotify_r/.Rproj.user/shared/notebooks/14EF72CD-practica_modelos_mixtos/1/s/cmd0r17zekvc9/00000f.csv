@@ -1,0 +1,2 @@
+"0","geyser_outliers[""clusters""] = outliers_gmm$classification"
+"0","plot(x =geyser_outliers$waiting , y = geyser_outliers$duration, col = geyser_outliers$clusters)"

@@ -1,0 +1,5 @@
+"0","cuantiles_teoricos=qexp(c(1:length(datos$peso))/(length(datos$peso)+1),1)"
+"0",""
+"0","qqplot(cuantiles_teoricos, datos$peso, "
+"0","       xlab = ""Cuantiles Teoricos Exp(1)"", "
+"0","       ylab = ""Cuantiles muestrales"")"

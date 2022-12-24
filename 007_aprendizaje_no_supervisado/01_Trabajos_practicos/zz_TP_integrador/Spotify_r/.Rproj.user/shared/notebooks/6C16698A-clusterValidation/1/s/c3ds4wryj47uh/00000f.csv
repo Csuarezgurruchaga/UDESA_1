@@ -1,0 +1,2 @@
+"0","# Elbow method"
+"0","fviz_nbclust(df, kmeans, method = ""silhouette"") + labs(subtitle = ""Elbow"")"

@@ -1,0 +1,18 @@
+"0","library(tidyverse)"
+"0","datos <- datos %>% rename(""mes"" = ""DOB_MM"", ""dia"" = ""DOB_WK"")"
+"1","[1m[33mError[39m in [38;5;252m`chr_as_locations()`[39m:[22m
+[33m![39m Can't rename columns that don't exist.
+[31mx[39m Column `DOB_MM` doesn't exist.
+Backtrace:
+[90m  1. [39mdatos %>% rename(mes = ""DOB_MM"", dia = ""DOB_WK"")
+[90m  3. [39m[1mdplyr[22m:::rename.data.frame(., mes = ""DOB_MM"", dia = ""DOB_WK"")
+[90m  4. [39m[1mtidyselect[22m::eval_rename(expr(c(...)), .data)
+[90m  5. [39mtidyselect:::rename_impl(...)
+[90m  6. [39mtidyselect:::eval_select_impl(...)
+     ...
+[90m 18. [39mtidyselect:::reduce_sels(node, data_mask, context_mask, init = init)
+[90m 19. [39mtidyselect:::walk_data_tree(new, data_mask, context_mask)
+[90m 20. [39mtidyselect:::as_indices_sel_impl(...)
+[90m 21. [39mtidyselect:::as_indices_impl(x, vars, call = call, strict = strict)
+[90m 22. [39mtidyselect:::chr_as_locations(x, vars, call = call)
+"

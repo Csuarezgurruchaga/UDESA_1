@@ -1,0 +1,391 @@
+---
+title: "Final R ENTREGA INDIVIDUAL"
+output: html_document
+date: '2022-05-07'
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# **EJERCICIO 2c**
+
+c)  ¿Que otra cosa le parece interesante de estudiar cuando uno tiene
+    uno o dos vectores en $R^n$?
+
+Comprobamos a partir de R que:
+
+Si tenemos dos vectores aleatorios z y w, la esperanza de la suma de
+esos vectores aleatorios, sera igual a la esperanza del primero mas la
+esperanza del segundo.
+
+```{r}
+esperanza_1 <- c()
+esperanza_2 <- c()
+for (i in 1:1000) {
+  z <- rexp(n = 10000) # vector aleatorio
+  w <- rnorm(n = 1000) # vector aleatorio
+  esperanza_1[i] <- mean(z + w) 
+  esperanza_2[i] <- mean(z) + mean(w)
+}
+
+all.equal(esperanza_1, esperanza_2)
+```
+
+Si tenemos una constante multiplicando a un vector aleatorio,
+comprobamos que la esperanza del escalar multiplicando al vector
+aleatorio, es igual a la esperanza del vector aleatorio, multiplicado
+por el escalar.
+
+```{r}
+esperanza_3 <- c()
+esperanza_4 <- c()
+for(i in 1:1000) {
+  m <- rexp(n = 1000, rate = 3)
+  esperanza_3[i] <- mean(4 * m)
+  esperanza_4[i] <- 4 * mean(m)
+}
+
+
+all.equal(esperanza_3, esperanza_4)
+```
+
+Tambien es interesante notar la distribucion a la que tienden a
+converger los valores promedio de theta, sin importar la distribucion
+con la que se generen las v.a. i.i.d., siempre convergen a una
+distribucion que se asemeja a la normal (TCL). Esto es logico, ya que la
+distribucion normal es un atractor para las distribuciones "promedio",
+lo cual es justamente lo que estamos realizando. Esto lo podemos
+observar mas claramente en el resultado del siguiente codigo, que
+calcula tambien la esperanza de theta, pero de otra manera, al
+presentado en la entrega grupal.
+
+```{r}
+vector_angulos <- c() # vector auxiliar donde se guardan los titas para hacer luego el promedio
+vector_titas <- c() # vector de estimaciones de esperanzas 
+vector_varianza_tita <- c() # vector donde guardo la varianza de los titas  
+j <- 1 # contador
+
+# ----------------------funciones----------------------
+# ----------------------funciones----------------------
+
+dame_norma <- function(matriz) {
+  return(norm(x = as.matrix(matriz), type = "f"))
+}
+
+dame_tita <- function(n_var_al, veces = 1000) {
+  
+  c <- 1 # contador
+  
+  for (vez in 1:veces) {
+  matriz_vect_al <- matrix(data = rexp(n = 2 * n_var_al),
+                           nrow = n_var_al,
+                           ncol = 2,
+                           byrow = F)
+  
+  producto_escalar <- sum(apply(matriz_vect_al, 1, prod))
+  
+  norma <- prod(apply(matriz_vect_al, 2, FUN = dame_norma))
+    
+  vector_angulos[c] <- acos(producto_escalar / prod(norma))
+  c <- c + 1
+  }
+  
+  return(vector_angulos)
+}
+
+graficame <- function(vector, main, ylabel) {
+  plot(vector ~ c(2, 3, 4, 5, 10, 20, 30, 100),
+                      main = main,
+                      ylim = c(min(vector), max(vector)), 
+                      ylab = ylabel, 
+                      xlab = "CANTIDAD DE VARIABLES ALEATORIAS",
+                      col = "blue",
+                      type = "b",
+                      pch = 4,
+                      lwd = 3,
+                      axes = F)
+  
+  box(col = "blue") # Agrego la caja
+  
+  
+  # Añadir eje X
+  axis(1,
+       at = c(3, 4, 5, 10, 20, 30, 100),
+       col = "blue",        # Color línea ejes
+       col.ticks = "green", # Color marcas ejes
+       col.axis = "red")    # Color de las etiquetas
+  
+  # Añadir eje Y
+  axis(2,
+       col = "blue",
+       col.ticks = "green",
+       col.axis = "red",
+       las = 2)
+}
+# ----------------------funciones----------------------
+# ----------------------funciones----------------------
+
+
+
+for (k in c(2, 3, 4, 5, 10, 20, 30, 100)) {
+  vector_angulos <- apply(as.matrix(k), 1, dame_tita)
+
+  vector_titas[j] <- mean(vector_angulos) # Obtengo la estimacion de la esperanza
+  vector_varianza_tita[j] <- var(vector_angulos) # Obtengo la varianza
+  
+  hist(x = vector_angulos, main = k, col = "blue", 
+                           xlab = "VALORES DE THETA",
+                           ylab = "FRECUENCIA") 
+
+  
+  print(paste0("La esperanza estimada de tita para n = ", k, " variables aleatorias es de: ", round(vector_titas[j], digits = 3)))
+  j <- j + 1
+} 
+
+graficame(vector_titas,
+          main = "ESPERANZA DE THETA EN FUNCION DE 'n'",
+          ylabel = "VALOR DE THETA EN RADIANES")  
+
+graficame(vector_varianza_tita,
+          main = "VARIANZA DE THETA EN FUNCION DE 'n'",
+          ylabel = "VALOR DE LA VARIANZA DE THETA")
+```
+
+# **EJERCICIO 3b**
+
+b)  ¿Que otra cosa le parece interesante de estudiar en este modelo?
+
+```{r}
+muestreo_poblacional = function(casos_p, verbose=F){
+  max_tiempo = 10
+  tiempo = seq(1:max_tiempo)
+  #Usamos una matriz para ir guardando los distintos valores que vayan saliendo, al final, cada columna de la matriz será un sample de los 100 que se hacen, es por esto que la matriz será de (10,100) --> (tiempos, iteraciones)
+  poblacion_final = matrix(ncol=0,nrow=max_tiempo)
+  
+  
+  for(k in 1:200){
+    if (verbose==T){
+      print(paste('Round: ',k))
+    }
+    #Comenzamos con 1 solo sobreviviente
+    poblacion = c(1) 
+    #Vector para ir guardando los valores en cada tiempo t
+    poblacion_total = c()
+    
+    for (t in tiempo){
+      
+      #Se toma un sample de una distribución aleatoria uniforme, si el valor/100 es menor a casos_p, el elemento sobrevive,
+      #caso contrario el mismo muere
+      probas = runif(length(poblacion), 1, 100) / 100
+      poblacion = probas * poblacion
+      
+      sobrevivientes = poblacion < casos_p
+      
+      #Lo población es igual a todas las divisiones de los sobrevivientes
+      poblacion = rep(1, times = sum(sobrevivientes) * 2)
+      
+      poblacion_total[t] = sum(poblacion)
+    }
+   #Populamos la matriz
+   poblacion_final = cbind(poblacion_final, poblacion_total)
+  } 
+  
+  return(poblacion_final);
+}
+
+
+par(mfrow = c(2, 2))
+
+for(u in c(0.2, 0.4, 0.6, 0.8)) {
+  poblacion_final_var = muestreo_poblacional(u)
+  varianza = c()
+  cont = 1
+
+  
+
+for (i in seq(0,200, 10)) {
+  varianza[cont] = var(poblacion_final_var[, i])
+  cont = cont + 1
+}
+
+
+
+plot(y = varianza, x = seq(0,200, 10), type = "l", 
+     main = paste0("VARIANZA CON PROBABILIDAD ", u),
+     xlab = "ITERACION",
+     ylab = "VARIANZA",
+     col = "blue")
+
+}
+```
+
+```{r, echo = FALSE}
+par(mfrow = c(1, 1))
+```
+
+Estudiando la dispersion del numero de miembros de la poblacion.
+Observamos como muy rapidamente se disparan los valores a medida que voy
+aumentando la probabilidad de sobrevivir.
+
+# EJERCICIO 5
+
+A partir de los datos de nacimientos:
+
+(a) Piense 5 preguntas no relacionadas con el problema de regresión que
+    le gustaria responder con\
+    estos datos 1.
+
+(b) Clasifique a las preguntas según si esta estudiando una sola
+    variable o la dependencia entre dos\
+    o mas variables.
+
+(c) Intente dar respuesta a las preguntas 2 del item (a) realizando
+    algún gráfico.
+
+```{r, echo = FALSE, message=FALSE}
+library(dplyr)
+```
+
+```{r}
+datos <- readRDS(file="data_final_individual.Rda")
+```
+
+1)  **Una variable Variable categorica**
+
+    ¿Estudie analitica y graficamente, cuantos varones y cuantas mujeres
+    nacieron?, ¿Cual fue el genero que predomino?
+
+```{r}
+(n_masculinos <- datos %>% 
+                  select(sexo) %>% 
+                  filter(sexo == "M") %>% 
+                  nrow())
+
+(n_femeninos <- datos %>% 
+                select(sexo) %>% 
+                filter(sexo == "F") %>% 
+                nrow())
+
+plot(datos$sexo, main = "Cantidad de nacimiento por generos",
+                xlab = "GENERO",
+                ylab = "CANTIDAD",
+                col = c("pink","blue"))
+
+legend("topright", c("FEMENINO", "MASCULINO"),
+                  fill = c("pink", "blue"))
+
+print(paste0("Nacieron ", n_masculinos, " bebes masculinos y ", n_femeninos, " bebes femeninos, y el genero que predomino fue el masculino"))
+```
+
+2)  **Una variable Variable numerica**
+
+    Realice un histograma de la distribucion del peso ganado por la
+    madre.
+
+```{r}
+hist(datos$`peso ganado madre`, 
+     main = "PESO GANADO POR LA MADRE",
+     xlab = "CANTIDAD DE Kg",
+     ylab = "FRECUENCIA",
+     col = "blue")
+
+
+
+abline(v = mean(datos$`peso ganado madre`, na.rm = T), 
+       col = "red", lwd = 3)
+
+legend("topright", c("PESO PROMEDIO AUMENTADO"),
+                  fill = c("red"))
+```
+
+En promedio, una madre aumenta aproximadamente 31kg en el proceso del
+embarazo.
+
+3)  **Dos variables**
+
+    **Relacion entre una variable numerica y una categorica**
+
+    Estudie el peso del recien nacido en funcion del genero
+
+```{r}
+datos %>% 
+  select(sexo, peso) %>% 
+  plot(col = c("pink", "blue"), 
+       main = "Distribucion del peso del recien nacido en funcion del genero",
+       xlab = "SEXO",
+       ylab = "PESO [gramos]")
+
+legend("topright", c("FEMENINO", "MASCULINO"),
+                  fill = c("pink", "blue"))
+```
+
+Observamos que no hay una gran diferencia en el peso del recien nacido
+ya sea hombre o mujer, y la dispersion de los pesos es muy similar
+tambien. Vemos que la mediana de los pesos del genero masculino esta un
+poco por encima del femenino.
+
+4.  **Dos variables**
+
+    **Relacion entre una variable categorica y una variable numerica**
+
+    Estudie graficamente la relacion entre el peso ganado por la madre y
+    la cantidad de bebes nacidos en el parto.
+
+```{r}
+datos %>% 
+  select(`parto multiple`, `peso ganado madre`) %>% 
+  plot(col = c("red", "blue", "yellow","green", "brown"), 
+       main = "AUMENTO DE PESO DE LA MADRE vs CANTIDAD DE BEBES",
+       xlab = "CANTIDAD DE BEBES",
+       ylab = "PESO GANADO [kg]")
+
+# legend("topright", c("CESAREA", "DESCONOCIDO", "NATURAL"),
+#                   fill = c("red", "blue", "yellow"))
+```
+
+Observamos que a medida que aumenta el numero de nacimientos por parto,
+el peso que aumenta la madre en el periodo de embarazo es mayor.
+
+5)  **Dos variables**
+
+    **Relacion entre una variable categorica y una numerica**
+
+    Estudie graficamente la relacion entre el tipo de parto que
+    finalmente se realizo y la cantidad de consultas previas al mismo.
+
+```{r}
+datos %>% 
+  select(`tipo parto`, `visitas medicas`) %>% 
+  plot(col = c("red", "blue", "yellow"), 
+       main = "Relacion entre el tipo de parto y la cantidad de consultas medicas",
+       xlab = "TIPO DE PARTO",
+       ylab = "CANTIDAD DE CONSULTAS MEDICAS")
+
+legend("topright", c("CESAREA", "DESCONOCIDO", "NATURAL"),
+                  fill = c("red", "blue", "yellow"))
+```
+
+Dado que parece poco logico un valor de 99 visitas medicas, vamos a
+cambiar este valor, ya que no aporta mucho estas unicas 3 personas en
+caso de ser real y no un error.
+
+```{r}
+maximo2 <- max(datos$`visitas medicas`)
+
+datos[datos$`visitas medicas` == maximo2, ]$`visitas medicas` = median(datos$`visitas medicas`)
+
+datos %>% 
+  select(`tipo parto`, `visitas medicas`) %>% 
+    plot(col = c("red", "blue", "yellow"), 
+       main = "Relacion entre el tipo de parto y la cantidad de consultas medicas",
+       xlab = "TIPO DE PARTO",
+       ylab = "CANTIDAD DE CONSULTAS MEDICAS")
+
+# legend("topright", c("CESAREA", "DESCONOCIDO", "NATURAL"),
+#                   fill = c("red", "blue", "yellow"))
+
+```

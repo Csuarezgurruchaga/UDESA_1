@@ -1,0 +1,4 @@
+"0","plot(fracaso_ols, 7)
+"
+"2","Error in plot.lm(fracaso_ols, 7) : 'which' must be in 1:6
+"

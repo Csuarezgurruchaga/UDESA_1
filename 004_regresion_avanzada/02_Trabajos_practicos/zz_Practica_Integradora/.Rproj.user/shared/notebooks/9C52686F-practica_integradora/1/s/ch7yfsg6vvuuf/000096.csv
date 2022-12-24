@@ -1,0 +1,7 @@
+"0","par(mfrow=c(1, 2))"
+"0",""
+"0","boxplot(COVID$muertes.permil ~ COVID$BCGf, "
+"0","        main = ""muertes por millon habitantes"","
+"0","        ylab = ""muertes.permil"", col=c(""thistle"",""wheat""), "
+"0","        cex = 0.7, xlab = ""Estrategia de inmunizacion"","
+"0","        names = c(""selectiva"", ""todos""))"

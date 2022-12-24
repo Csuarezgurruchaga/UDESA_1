@@ -1,0 +1,216 @@
+
+Ejercicio: geyser
+
+Considere el conjunto de datos geyser de la libreria MASS. Haga un análisis del dataset.
+
+1- Ajustar un modelo mixto con dos normales multivaridas: mod1.
+
+```{r}
+library(mclust)
+library(MASS)
+```
+
+
+```{r}
+# write.csv(geyser, file = "geyser_r.csv")
+gmm=Mclust(geyser, G = 2) #solo estima la cantidad de correcta de clusters
+```
+
+
+```{r}
+summary(gmm, parameters=T)
+```
+
+2- Utilize el criterio BIC para seleccionar el mejor modelo: mod2.
+```{r}
+best_gmm = Mclust(geyser) #Solo estima la mejor cantidad de cluster a partir del BIC
+```
+
+
+```{r}
+BIC = mclustBIC(geyser)
+BIC
+# summary(bic)
+```
+
+3- Compare mod1 con mod2.
+```{r}
+densidad=densityMclust(geyser, G=2)
+summary(mclustBIC(geyser, G=2))
+```
+```{r}
+# Ploteamos la funcion de densidad de las gauseanas multivariadas estimadas con
+# las que clusterizo los datos
+densidad_best_gmm=densityMclust(geyser)
+plot(densidad_best_gmm, what="density", data=geyser, col = "blue")
+summary(mclustBIC(geyser))
+```
+
+
+4- ¿Hay algunos puntos para los cuales no este clara la clasificación?¿Qué puede decir sobre ellos?
+
+```{r}
+geyser_2 = geyser
+geyser_2["cluster"]=best_gmm$classification
+geyser_2["probabilidad_clasificacion"]=round(best_gmm$uncertainty, 3)
+geyser_2
+```
+```{r}
+# Outlier
+# Aqui observamos que la observacion que se aprecia mas alejada, tiene un valor de 
+# probabilidad de pertenecer al cluster 4, bajo. Lo cual es logico. 
+geyser[geyser["waiting"]==108,]
+```
+5- Explore el paquete mclust o el que quiera utilizar y uselo en el dataset geyser.
+
+
+
+Ejercicio: hacking mixture models
+
+1- Genere un conjunto de datos univariados con una distribución que no sea normal y observe los resultados. (Sugerencia: utilizar una distribución asimétrica)
+
+```{r}
+plot(dexp(x = 1:100,rate = 1/20), col = "blue")
+```
+
+
+```{r}
+x1 = rexp(rate = 1/20, n = 50)
+x2 = rexp(rate = 1/10, n = 50)
+x3 = rexp(rate = 1/20, n = 50)
+x4 = rexp(rate = 1/10, n = 50)
+
+data = data.frame(rbind(cbind(x1,x2),cbind(x3,x4)))
+
+gmm_no_gaussean=Mclust(data)
+
+densidad_gmm_no_gaussean=densityMclust(data)
+plot(densidad_gmm_no_gaussean, what="density", data=data, col = "blue")
+```
+Observamos como el supuesto de normalidad de los regresores es muy fuerte.
+
+2- ¿Qué tan sensible es la estimación de parámetros del modelo mixto a la presencia de valores atípicos?
+
+```{r}
+geyser_outliers=geyser
+geyser_outliers[5,"waiting"]=150
+geyser_outliers[7,"waiting"]=150
+
+# geyser_outliers[5,"duration"]=50
+# geyser_outliers[8,"duration"]=40
+
+densidad_outliers_gmm=densityMclust(geyser_outliers)
+outliers_gmm = Mclust(geyser_outliers)
+plot(densidad_outliers_gmm, what="density", data=geyser_outliers, col = "blue")
+```
+```{r}
+outliers_gmm$G # Ver coloreando clusters, a ver que hace con los outliers
+```
+```{r}
+geyser_outliers["clusters"] = outliers_gmm$classification
+
+plot(x =geyser_outliers$waiting , y = geyser_outliers$duration, col = geyser_outliers$clusters)
+```
+
+```{r}
+geyser_outliers=geyser
+geyser_outliers[5,"waiting"]=150
+geyser_outliers[7,"waiting"]=150
+
+geyser_outliers[5,"duration"]=50
+geyser_outliers[8,"duration"]=40
+
+densidad_outliers_gmm=densityMclust(geyser_outliers)
+plot(densidad_outliers_gmm, what="density", data=geyser_outliers, col = "blue")
+```
+```{r}
+outliers_gmm$G # Ver coloreando clusters, a ver que hace con los outliers
+```
+
+Observamos que se comporta de forma robusta frente a los 4 outliers que insertamos
+```{r}
+geyser_outliers["clusters"] = outliers_gmm$classification
+plot(x =geyser_outliers$waiting , y = geyser_outliers$duration, col = geyser_outliers$clusters)
+```
+  
+
+```{r}
+geyser_outliers=geyser
+geyser_outliers[5,"waiting"]=150
+geyser_outliers[5,"duration"]=50
+
+geyser_outliers[7,"waiting"]=150
+geyser_outliers[7,"duration"]=51.3
+
+geyser_outliers[9,"waiting"]=149.5
+geyser_outliers[9,"duration"]=49.2
+
+geyser_outliers[11,"waiting"]=148
+geyser_outliers[11,"duration"]=52
+
+geyser_outliers[13,"waiting"]=147.3
+geyser_outliers[13,"duration"]=51.87
+
+geyser_outliers[22,"waiting"]=147.1
+geyser_outliers[22,"duration"]=52.7
+
+geyser_outliers[23,"waiting"]=148.5
+geyser_outliers[23,"duration"]=52.2
+# write.csv(geyser_outliers, file = "geyser_outliers_r.csv")
+densidad_outliers_gmm=densityMclust(geyser_outliers)
+plot(densidad_outliers_gmm, what="density", data=geyser_outliers, col = "blue")
+```
+```{r}
+Mclust(geyser_outliers)$G
+```
+```{r}
+geyser_outliers["clusters"] = outliers_gmm$classification
+plot(x =geyser_outliers$waiting , y = geyser_outliers$duration, col = geyser_outliers$clusters)
+```
+```{r}
+# Observamos la certeza o seguridad con la que clasifico a los outliers en sus clusters
+outliers_gmm$uncertainty[c(5, 7, 9, 11, 13, 22, 23)]
+```
+```{r}
+outliers_gmm$uncertainty[2]
+1-round(outliers_gmm$z[2,],5)
+```
+
+Comprobamos que ignora el pequeno grupo de outliers, es un metodo de clusterizacion robusto, donde a los outliers, les asigna un cluster, pero con un uncertenty bastante bajo, con lo cual esa clasificacion de cluster, pierde un poco el sentido.
+
+3- ¿Qué sucede cuando la dimensión de los datos es mucho mayor a la cantidad de observaciones?
+  
+```{r}
+rows = sample(x = 1:300,20)
+geyser_alta_dimension=geyser[rows,c("waiting","duration")]
+
+mu1 = mean(geyser_alta_dimension$waiting)
+tita1 = sd(geyser_alta_dimension$waiting)
+
+mu2 = mean(geyser_alta_dimension$duration)
+tita2 = sd(geyser_alta_dimension$duration)
+
+new_waiting = replicate(200,rnorm(n = 20, mean = mu1, sd = tita1) + runif(1, min=50, max=100))
+new_duration = replicate(200,rnorm(n = 20, mean = mu2, sd = tita2) + runif(1, min=1, max=4)) 
+
+
+data_alta_dimension = data.frame(cbind(geyser_alta_dimension,new_waiting,new_duration))
+data_alta_dimension
+```
+```{r}
+# densidad_alta_dimension_gmm=densityMclust(data_alta_dimension)
+# plot(densidad_alta_dimension_gmm, what="density", data=data_alta_dimension, col = "blue")
+```
+
+```{r}
+gmm_alta_dimensionalidad=Mclust(data_alta_dimension)
+```
+```{r}
+gmm_alta_dimensionalidad$G
+```
+```{r}
+gmm_alta_dimensionalidad$classification
+```
+
+Vemos que falla en la asignacion de clusters, da resultados raros y/o erroneos.
+

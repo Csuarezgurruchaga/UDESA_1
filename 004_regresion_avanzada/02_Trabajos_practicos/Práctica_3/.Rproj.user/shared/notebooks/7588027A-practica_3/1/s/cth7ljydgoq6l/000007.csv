@@ -1,0 +1,2 @@
+"0",""
+"0","abline(h = pf(n_parametros, n - n_parametros, 0.5), col = ""red"")"

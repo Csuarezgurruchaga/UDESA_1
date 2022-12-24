@@ -1,0 +1,5 @@
+"0","vec <- vector()"
+"0","f <- expression(x ^ 2 - 4 * x + 9)"
+"0","derivada <- D(f, ""x"")"
+"0","x <- -3:7"
+"0","vec <- eval(derivada)"

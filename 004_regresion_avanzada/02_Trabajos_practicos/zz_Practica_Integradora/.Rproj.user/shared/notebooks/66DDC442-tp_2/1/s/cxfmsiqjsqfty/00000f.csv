@@ -1,0 +1,3 @@
+"0","library(ellipse)"
+"0","plot(ellipse(modelo_fuel, which = c(2, 3), level = 0.95), "
+"0","     col = ""darkblue"", main = ""ELIPSOIDE DE CONFIANZA 95%"")"

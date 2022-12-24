@@ -1,0 +1,81 @@
+--- title: 'Probabilidad: Práctica 2 Reglas de asociación' author: "Daniel
+Fraiman" date: "abril 2021" output: html_document: default pdf_document: default
+---
+```{r}
+#Importamos la libreria arules
+install.packages("arules")
+
+library(arules)
+```
+
+
+### 1. Cargar los datos "datos_groceries.csv" y observar cómo vienen lo datos. ¿Qué representa la variable id\_compra?
+```{r}
+data <- read.csv(file = "datos_groceries.csv")
+(str(data))
+(data)
+```
+*La variable id_compra representa el numero de ticket que compro ciertos productos*
+
+
+#### a) ¿Cuántas compras tiene la base?
+```{r}
+# Vamos a importar la libreria dplyr
+library(dplyr)
+
+data_df<-data.frame(data)
+
+(n_distinct(data_df$id_compra))# La funcion n_distinct me devuelve la cantidad de valores distintos de una columna
+
+```
+#### b) ¿Cuántos productos distintos se vendieron?
+```{r}
+n_distinct(data_df$item)
+
+```
+
+### c) Calcule el soporte de cada ítem. 
+```{r}
+# Soporte(S->T) = P(S^T) >= Support_value
+# Donde S, es el conjunto de objetos que ya se tienen en el carrito
+# y T es el producto que quiero que agregue el comprador.
+# P(S^T)= # tickets que tienen los productos S / # tickets total
+# El soporte de cada item, seria la probabilidad de llevar "ese" item
+
+
+support_df<-data.frame(table(data_df$item)/n_distinct(data_df$id_compra))
+
+colnames(support_df)<-c("Product","Support")
+(support_df<-support_df[order(support_df$Support, decreasing = TRUE),])
+
+```
+### d) Calcule el soporte de {whole milk, yogurt}. 
+```{r}
+# P(whole milk ^ yogurt)
+
+quantity_milk_yogurt=length(intersect(data_df$id_compra[data_df$item=='whole milk'],data_df$id_compra[data$item=="yogurt"]))
+
+(support_milk_yogurt = quantity_milk_yogurt/n_distinct(data_df$id_compra))
+
+
+
+```
+
+### Utilizando la librery arules calcule las reglas de asociación que tengan un soporte mayor a 0.005 y un confianza mayor a 0.7. 
+```{r}
+transacciones = read.transactions(file = "datos_groceries.csv", format = "single", sep = ",",header = TRUE, cols = c("id_compra",  "item"), rm.duplicates = TRUE)
+
+soporte = 0.005
+confianza = 0.7
+reglas=apriori(data = transacciones, parameter = list(support = soporte, confidence = confianza)) #, minlen = 3, maxlen = 5
+inspect(reglas)
+
+```
+#### a) ¿Cuántas reglas obtuvo?
+```{r}
+inspect(reglas)
+```
+#### b) Seleccione las reglas que tengan del lado izquierdo "tropical fruit" y "yogurt". Hint: Utilice el comando subset(reglas,subset=lhs...)
+```{r}
+subset(reglas,subset = rhs %in% c("tropical fruit","yogurt"))
+```

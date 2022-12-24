@@ -1,0 +1,2 @@
+"0","tabla3 = aggregate(datos$apgar,list(datos$gestacion), mean,na.rm=T)"
+"0","plot(tabla3,xlab=""gestacion"",ylab=""apgar"")"

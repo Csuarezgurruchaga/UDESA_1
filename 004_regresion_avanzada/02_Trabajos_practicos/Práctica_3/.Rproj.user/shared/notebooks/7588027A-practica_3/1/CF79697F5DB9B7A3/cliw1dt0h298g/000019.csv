@@ -1,0 +1,4 @@
+"0","boxcox(modelo_cerebro)
+"
+"2","Error in df$brain_wt : object of type 'closure' is not subsettable
+"

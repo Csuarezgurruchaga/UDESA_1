@@ -1,0 +1,6 @@
+"0","plot(y = df$brain_wt,"
+"0","     x = df$body_wt,"
+"0","     main = ""PESO DEL CEREBRO RESPECTO AL PESO CORPORAL"","
+"0","     xlab = ""PESO CORPORAL"","
+"0","     ylab = ""PESO DEL CEREBRO"","
+"0","     col = ""blue"")"

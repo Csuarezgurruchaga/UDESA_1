@@ -1,0 +1,64 @@
+---
+title: "Consistencia Estimadores OLS"
+author: "Marcela Svarc"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simulacion
+
+Vamos a hacer una simulacion para mostrar las propiedades de los estimadores de maxima verosimilitud.
+
+Generamos datos que sigan el modelo
+$$
+y=\beta_0+\beta_0x+\epsilon,
+$$
+donde $\beta_0=0$ y $\beta_1=1,$
+es decir 
+$$
+y=x+\epsilon,
+$$
+los errores $\epsilon$ van a seguir los supuestos usuales y tener distribucion $N(0,1).$
+
+Genero una grilla de $x$
+
+```{r datos}
+x=1:10
+print(x)
+```
+La simulacion va a tener nrep replicas
+```{r nr}
+nrep=10000
+```
+Los estimadores de los parametros los voy a guardar en dos vectores, beta0 y
+beta1
+
+```{r simul}
+beta0=vector(length=nrep)#vector de beta0s estimados
+
+beta1=vector(length=nrep)#vector de beta1s estimados
+
+for (i in 1:nrep){
+  errores=rnorm(length(x))#genero errores normales estandares.
+  y=x+errores #genero las variables de respuesta
+  yx.lm=lm(y~x) #hago la regresion
+  beta0[i]=yx.lm$coefficients[1]#guardo el intercept
+  beta1[i]=yx.lm$coefficients[2]#guardo la pendiente
+
+}
+
+```
+Buscamos las medidas resumenes de las variables de respuesta
+```{r resumen}
+summary(cbind(beta0,beta1)) #medidas resumenes de los dos estimadores
+```
+Y ahora hacemos los graficos
+
+```{r graficos}
+par(mfrow=c(2,1))
+hist(beta0) #histograma intercept.
+hist(beta1) #histograma ordenda al origen.
+```

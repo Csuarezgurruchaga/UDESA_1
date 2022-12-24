@@ -1,0 +1,6 @@
+"0",""
+"0",""
+"0",""
+"0","# mujeres"
+"0","points(AlturaGalton_m$childHeight ~ AlturaGalton_m$midparentHeight,"
+"0","       col = ""pink"", lwd = 2, cex = 0.2)"

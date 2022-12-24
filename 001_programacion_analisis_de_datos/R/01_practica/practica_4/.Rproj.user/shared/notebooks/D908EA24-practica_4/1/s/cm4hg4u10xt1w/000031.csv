@@ -1,0 +1,2 @@
+"0",""
+"0","# datos[datos$gestacion == 40, c(""apgar"", ""gestacion"")]"

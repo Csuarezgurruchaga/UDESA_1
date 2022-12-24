@@ -1,0 +1,33 @@
+{
+    "id": "D937B0AE",
+    "path": "~/Desktop/UDESA/004_regresion_avanzada/01_Clases/Práctica_1/practica_1.Rmd",
+    "project_path": "practica_1.Rmd",
+    "type": "r_markdown",
+    "hash": "4128263169",
+    "contents": "",
+    "dirty": false,
+    "created": 1656943931404.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "101,0",
+        "scrollLine": "97",
+        "last_setup_crc32": "7C7F2474bb338d19",
+        "rmdVisualMode": "false",
+        "rmdVisualWrapConfigured": "true",
+        "docOutlineVisible": "1",
+        "rmdVisualModeLocation": "505:1082.727294921875",
+        "rmdVisualCollapsedChunks": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1656975419,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1656975419094,
+    "read_only": false,
+    "read_only_alternatives": []
+}

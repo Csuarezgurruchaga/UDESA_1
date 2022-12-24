@@ -1,0 +1,4 @@
+"0",""
+"0","# Intervalos de confianza "
+"0","points(x = data_midparentHeight$midparentHeight, pch = 16,"
+"0","       y = int_confianza_height_m[, 2], col = ""orange"", cex = 0.4)"

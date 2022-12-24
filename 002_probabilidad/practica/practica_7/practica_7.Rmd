@@ -1,0 +1,166 @@
+1)
+Mostrar el Teorema Central del l ́ımite utilizando   aprox. Suponga que las variables X1,X2,..., tienen una ley:
+a) Uniforme[0,1] 
+b) Normal[10,1] 
+c) Exponencial[1]
+d) Cauchy ¿Que pasa en este caso?
+
+1 a)
+```{r}
+vec <- vector()
+for (i in 1:10000) {
+  vec[i]  <- mean(runif(30, min = 0, max = 1))
+}
+
+hist(vec, main = "Uniforme")
+```
+1 b)
+```{r}
+vec <- vector()
+for (i in 1:10000) {
+  vec[i]  <- mean(rnorm(n = 30, mean = 10, sd = 1))
+}
+
+hist(vec, main = "Normal")
+```
+
+1 c)
+```{r}
+vec <- vector()
+for (i in 1:10000) {
+  vec[i]  <- mean(rexp(n = 40, rate = 1))
+}
+
+hist(vec, main = "Exponencial")
+```
+
+1 d)
+```{r}
+vec <- vector()
+for (i in 1:10000) {
+  vec[i]  <- mean(rcauchy(200, location = 0, scale = 1))
+}
+
+hist(vec, main = "Cauchy Distribution", xlim = c(-5000, 5000))
+```
+Para el caso de la distribucion de Cauchy, no converge a una distribucion Normal,dado que NO TIENE ESPERANZA MATEMATICA.
+
+2)¿Por que cree que es util este teorema?
+
+El TCL es util, dado que me permite calcular probabilidades de un problema, sin tener la distribución con la que se comporta la secuencia de v.as.(que comparten la misma distribucion), analizadas en el mismo. Solo con saber la varianza y la esperanza matemática, puedo aproximar su resultado a partir de la distribución normal. Debo tener en cuenta que las v.as. deben ser independientes entre ellas y tener la misma distribución entre ellas.
+
+3) Mostrar la Ley de grandes numeros, suponga alguna distribucíon. Raprox
+
+3)
+```{r}
+par(mfrow = c(1, 2))
+hist(as.integer(runif(n = 100, min = 1, max = 7)),
+     main = "",
+     xlab = "CARA DEL DADO",
+     ylab = "FRECUENCIA")
+
+hist(as.integer(runif(n = 1000000, min = 1, max = 7)), main = "", xlab = "")
+```
+```{r}
+par(mfrow = c(1, 1))
+plot(x = c(0, 10000), y = c(0,  0.35), main = "Demostracion empirica Ley de grandes numeros",
+     xlab = "Cantidad de lanzamientos", col = "white",
+     ylab = "Probabilidad"
+     )
+
+for (cant_lanzamientos in 1:10000) {
+  prob <- sum(as.integer(runif(n = cant_lanzamientos, min = 1, max = 7)) == 1) / cant_lanzamientos
+  points(cant_lanzamientos, y = prob, col = "red", lwd = 1)
+}
+
+abline(h = 1/6, col = "blue", lwd = 2) # Esperanza = 16.66%
+
+```
+Observamos como a medida que aumentan los lanzamientos, la frecuencia con la que se repite un determinado evento (salga 1), se acercara cada vez mas en *promedio* a una constante que tendra el valor de la esperanza matematica = 1/6 (valor de probabilidad teorica).
+El promedio con un n(lanzamiento de dados) muy grande, coincide con la esperanza matematica.
+
+4) Estime el valor de π sabiendo que el area de un cırculo de radio 1 es π.
+4)
+```{r}
+n <- 1000000
+aux <- 0
+uniform_x <- runif(n = n, min = -1, max = 1)
+uniform_y <- runif(n = n, min = -1, max = 1)
+
+for (i in 1:n) {
+  if (sqrt((uniform_x[i]) ^ 2 + (uniform_y[i]) ^ 2) < 1) {
+    aux = aux + 1
+  }
+  
+}
+  
+prob_dentro_circulo <- (aux / n)
+
+(pi = pcirculo * 4)
+```
+5) 
+Se tiran 5 dados. La probabilidad de que sacar generala servida (o sea los 5 dados con el mismo nu ́mero) es 1/1296. Utilizando Raprox muestre que el resultado es correcto. ¿Cuantas veces va a tirar los 5 dados para tener un error en la estimacion de la probabilidad de sacar generala menor al 10 %? Haga un grafico mostrando la convergencia.
+
+5 a)
+```{r}
+dado <- c()
+generala <- 0
+total_lanzamientos <- 1000000
+
+for (lanzamiento in 1:total_lanzamientos) {
+  dado <-  as.integer(runif(n = 5, min = 1, max = 7))
+  if (length(unique(dado)) == 1 ) {
+    generala = generala + 1
+  }
+}
+(prob_generala <- generala / total_lanzamientos)
+```
+5 b)
+```{r}
+prob_teorica_generala <- 1/1296
+lim_sup_generala <- (1/1296) * 1.1
+lim_inf_generala <- (1/1296) * 0.9
+probabilidad_empirica_generala <- runif(n = 1, min = 0, max = 0.006) # valor arbitrario para comenzar el loop
+total_lanzamientos <- 100
+precision <- 10
+paso <- 1
+vector_lanzamientos <- c()
+vector_probabilidades_empiricas <- c()
+c <- 0
+generala <- 0
+
+while (abs(prob_teorica_generala - probabilidad_empirica_generala) > prob_teorica_generala * 0.1) { 
+  for (lanzamiento in seq(1, total_lanzamientos, precision)) {
+  dado <- as.integer(runif(n = 5, min = 1, max = 7))
+  if (length(unique(dado)) == 1) {
+    generala = generala + 1
+  }
+  }
+if (generala != 0) {
+  probabilidad_empirica_generala <- generala / total_lanzamientos
+  generala <- 0 
+}  
+
+total_lanzamientos <- total_lanzamientos + paso
+vector_lanzamientos[c] <- total_lanzamientos
+vector_probabilidades_empiricas[c] <- probabilidad_empirica_generala
+c <- c + 1
+}
+(total_lanzamientos)
+```
+```{r}
+plot(vector_lanzamientos, vector_probabilidades_empiricas, 
+                          pch = 20, type = "l", col = "violet", lwd = 2,
+                          # ylim = seq(0, 0.01, 20),
+                          xlab = "CANTIDAD DE LANZAMIENTOS",
+                          ylab = "PROBABILIDAD DE GENERALA")
+                         
+abline(h = prob_teorica_generala, col = "blue", lwd = 2)
+abline(h = lim_sup_generala, col = "black", lty = 5, lwd = 1)
+abline(h = lim_inf_generala, col = "black", lty = 5, lwd = 1)
+legend("topright", legend=c("PROB. TEORICA GENERALA", "TOL. 10% MAX", 
+                            "TOL. 10% MIN"),
+       fill = c("blue", "black", "black"))
+```
+
+

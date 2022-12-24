@@ -1,0 +1,3 @@
+"0","hist(esperanza2015$life.2015, col = ""brown"","
+"0","                    main = ""DISTRIBUCION VARIABLE TARGET"","
+"0","                    xlab = ""ESPERANZA DE VIDA AL NACER"")"

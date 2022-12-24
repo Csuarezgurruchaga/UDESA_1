@@ -1,0 +1,6 @@
+"0","plot(studres(mm_modelo_cerebro), mm_modelo_cerebro$rweights, 
+     main = ""RESIDUOS STUDENTIZADOS VS RWEIGHTS"", col = ""blue"",
+     xlab = ""RESIDUOS ESTUDENTIZADOS"",
+     ylab = ""R-WEIGHTS"")
+"
+"2","Warning: longer object length is not a multiple of shorter object length"

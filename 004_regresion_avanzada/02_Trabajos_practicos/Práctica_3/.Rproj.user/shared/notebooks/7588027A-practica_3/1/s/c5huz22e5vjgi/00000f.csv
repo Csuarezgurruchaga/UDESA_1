@@ -1,0 +1,16 @@
+"0","library(RobStatTM)
+"
+"2","
+Attaching package: ‘RobStatTM’
+
+"
+"2","The following objects are masked from ‘package:MASS’:
+
+    huber, oats
+
+"
+"2","The following object is masked from ‘package:datasets’:
+
+    stackloss
+
+"

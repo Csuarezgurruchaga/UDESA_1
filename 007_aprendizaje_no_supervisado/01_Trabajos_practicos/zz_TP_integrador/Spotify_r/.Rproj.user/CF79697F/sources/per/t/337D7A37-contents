@@ -1,0 +1,77 @@
+---
+title: "Validación"
+author: "Lucas Fernandez Piana"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FactoMineR)
+library(factoextra)
+library(fpc)
+library(mclust)
+library(NbClust)
+library(cluster)
+```
+
+## Iris Dataset
+
+En este documento encontrará algunos de los comandos que vimos en la parte teórica.
+
+### Heatmap
+
+```{r heatmap}
+## Dataset Iris
+data(iris)
+df = iris[,-5]
+fviz_dist(dist(df), show_labels = FALSE) + labs(title = "Iris data")
+```
+
+### Validación Externa
+
+```{r externa}
+
+K = 3
+df_kmeans = kmeans(df, K)
+
+# Conociendo las etiquetas podemos usar un indice de validacion externa para analizar el algoritmo
+adjustedRandIndex(df_kmeans$cluster, iris$Species)
+table(kmeans=df_kmeans$cluster, Species = iris$Species)
+```
+
+
+### Estabilidad Hening
+
+Armamos 3 grupos con K-means y vemos qué tan estables son.
+
+```{r Hening}
+df_kmeans_stability = clusterboot(df, clustermethod=kmeansCBI, k=K)
+df_kmeans_stability
+```
+
+
+### Validación Interna: Silhouette
+
+```{r Silhouette}
+df_kmeans_silhouette = silhouette(df_kmeans$cluster, dist(df))
+plot(df_kmeans_silhouette)
+```
+
+
+### Número de Grupos:
+
+```{r Elbow}
+# Elbow method
+fviz_nbclust(df, kmeans, method = "wss") +
+labs(subtitle = "Elbow")
+```
+
+```{r Silohuette}
+# Elbow method
+fviz_nbclust(df, kmeans, method = "silhouette") + labs(subtitle = "Elbow")
+```
+
+```{r Gap}
+fviz_nbclust(df, kmeans, nstart = 25, method = "gap_stat", nboot = 50) + labs(subtitle = "Gap")
+```

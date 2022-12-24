@@ -1,0 +1,5 @@
+"0","hist(datos$`peso ganado madre`, "
+"0","     main = ""PESO GANADO POR LA MADRE"","
+"0","     xlab = ""CANTIDAD DE Kg"","
+"0","     ylab = ""FRECUENCIA"","
+"0","     col = ""blue"")"

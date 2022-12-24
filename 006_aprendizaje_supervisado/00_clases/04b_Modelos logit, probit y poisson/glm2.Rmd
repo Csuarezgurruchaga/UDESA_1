@@ -1,0 +1,350 @@
+---
+title: "glm"
+author: "Marcela"
+date: "16 de agosto de 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(ISLR)
+```
+
+Analizaremos los datos $\mathtt{Default}$ de la libreria $\mathtt{ISLR},$ que consisten en 10.000 observaciones de informacion bancaria, contamos con las variables regresoras
+$\mathtt{balance},$ $\mathtt{ingreso}$ y $\mathtt{student}$ y como variable de respuesta $\mathtt{default},$ indica con un 1 si la persona no paga la tarjeta de credito y cero en caso contrario.
+
+En este conjunto de datos el 3% de las observaciones corresponden a individuos que no pagaron la tarjeta de credito, por lo tanto tenemos muestras desbalanceadas. Para comenzar pondremos este punto de costado y no diferenciaremos entre la muestra training y test, por simplicidad para aislar el analisis de estas tecnicas. Pero luego volveresmo sobre estos puntos.
+
+```{r default descriptiva}
+library(ISLR)
+library(ggplot2)
+summary(Default)
+attach(Default)
+
+ggplot(Default, aes(x=balance,y=income,col=default))+geom_point()
+
+
+ggplot(Default, aes(x=balance,y=income,col=student))+geom_point()
+
+ggplot(Default,aes(x=student,y=balance,fill=default))+geom_boxplot()
+
+ggplot(Default,aes(x=student,y=income,fill=default))+geom_boxplot()
+
+```
+
+Se puede ver que las variables balance y student parecen tener vinculacion con la variable default, pero que no ocurre lo mismo con la variables income.
+
+
+
+```{r regresion logit}
+salida1=glm(default~.,family = binomial,data=Default)
+salsum=summary(salida1)
+
+salsum
+
+
+#Hacemos el test de deviance
+
+1-pchisq(salida1$null.deviance-salida1$deviance, salida1$df.null-salida1$df.residual)
+
+```
+En cuanto a la significatividad del modelo el test de la deviance dice que el modelo es significativo. Por otra parte en los test individuales, vemos como sospechabamos al principio que la variables $\mathtt{income}$ no es significatica. Por otra parte, como el coeficiente que acompania a la variable $\mathtt{balance}$ es positivo a mayor balance mas probabilidad de defaultear la tarjeta. Mientras que el coeficiente que acompania a la variable $\mathtt{student}$ es negativo, indicando que los estudiantes tienen menor probabilidad de defaultear la tarjeta.
+
+A continuacion calculamos los intervalos de confianza para los coeficientes, ademas de los intervalos de confianza para $e^{\beta}$ que indica como varia la razon de probabilidades.
+
+```{r analisis de la regresion}  
+#calculamos los intervalos de confianza
+
+confint(salida1)
+
+exp(confint(salida1))
+
+```
+
+
+
+A continuacion procedemos a seleccionar variables mediante el criterio de Akaike, el modelo que selecciona excluye a la variable $\mathtt{income},$ esto es consistente con el analisis que hicimos anteriormente.
+
+```{r step Akaike}
+
+step(salida1)
+
+salida2=glm(default~balance+student,family = binomial)
+```
+
+Por ultimo graficamos la probabilidad de defaultear la tarjeta, para diferentes valores de $\mathtt{balance},$ hay una curva para estudiantes y otra para no estudiantes.
+
+```{r predicciones}
+bal.new=seq(min(balance),max(balance),100)
+new.est=data.frame(balance=bal.new,student=factor(rep("Yes",length(bal.new))))
+pred.est=predict(salida2,newdata = new.est,type="response")
+new.no.est=data.frame(balance=bal.new,student=factor(rep("No",length(bal.new))))
+pred.no.est=predict(salida2,newdata = new.no.est,type="response")
+df=data.frame(balnew=c(bal.new,bal.new),pred=c(pred.est,pred.no.est),estu=rep(c("Yes","No"),each=length(bal.new)))
+ggplot(df, aes(x=balnew,y=pred,group=estu))+  geom_point(aes(color=estu))+
+geom_line(aes(color=estu))
+
+```
+A igualdad de balance la probabilidad de defaultear la tarjeta siempre es menor para un estudiante.
+
+
+A continuacion hacemos las predicciones, para esto se predicen las probabilidades de defaultear la tarjeta y luego se pone una cota por encima de la cual se clasifica al individuo con $\mathtt{default}=1,$ es decir se predice que no va a pagar la tarjeta. Dependiendo de la cota que se fije, se modifica el error global, asi como tambien la sensitividad y especificidad.
+En este caso la cota esta fijada en $p=0.5,$ pero este valor se puede cambiar. 
+
+
+```{r predicciones2}
+predicciones=predict(salida2,type="response")
+boxplot(predicciones)
+hist(predicciones)
+def.pred=rep("No",length(predicciones))
+p0=0.5
+def.pred[predicciones>p0]="Yes"
+confmat=table(default,def.pred,dnn = c("Real", "Predicha"))
+confmat
+library(caret)
+cm.log.def=confusionMatrix(confmat)
+cm.log.def
+```
+ Se puede ver que la especificidad no es alta, si quisieramos que fuera mas alta tendriamos que aumentar la cota del corte, al hacer esto la accuracy y la sensitividad van a disminuir. Hagamos el ejemplo con $p_0=0.4$ y vemos que esto es lo que ocurre.
+
+
+```{r especificidad}
+def.pred=rep("No",length(predicciones))
+p0=0.4
+def.pred[predicciones>p0]="Yes"
+confmat=table(default,def.pred,dnn = c("Real", "Predicha"))
+confmat
+cm.log.def=confusionMatrix(confmat)
+cm.log.def
+```
+
+Analizamos la evolucion de la especificidad y sensitividad para diferentes posibles cortes en la clasificacion.
+
+```{r curva errores}
+p_0=seq(0.05,0.95,0.05)
+error.global=vector(length = length(p_0))
+def.mal.class=vector(length = length(p_0))
+no.def.mal.class=vector(length = length(p_0))
+
+for (i in 1:length(p_0)){
+  def.pred=rep("No",length(predicciones))
+  def.pred[predicciones>p_0[i]]="Yes"
+  confmat=table(default,def.pred,dnn = c("Real", "Predicha"))
+  error.global[i]=(confmat[1,2]+confmat[2,1])/length(predicciones)
+  def.mal.class[i]=confmat[1,2]/length(predicciones)
+  no.def.mal.class[i]= confmat[2,1]/length(predicciones) 
+  }
+
+
+
+df=data.frame(probs=c(p_0,p_0,p_0),med=c(error.global,def.mal.class,no.def.mal.class),clase=rep(c("error global","defaulteadores mal clasificados","no defaulteadores mal clasificados"),each=length(p_0)))
+ggplot(df, aes(x=probs,y=med,group=clase))+  geom_point(aes(color=clase))+
+geom_line(aes(color=clase))
+```
+
+```{r optimo}
+library(InformationValue)
+optCutOff=optimalCutoff(default,predicciones)
+p_0=optCutOff[1]
+
+def.pred=rep("No",length(predicciones))
+
+def.pred[predicciones>p_0]="Yes"
+confmat=table(default,def.pred,dnn = c("Real", "Predicha"))
+confmat
+
+```
+
+
+
+Si bien en este ejemplo especifico la seleccion de variables realizada utilizando el criterio de Akaike fue adecuada, si tuvieramos muchas variables seria conveniente seleccionar las variables ajustar el modelo mediante un estimador LASSO. El analisis es analogo al realizado en regresion lineal. El parametro de penalidad $\lambda$ se encuentra por convalidacion cruzada.
+
+
+En este caso las dos muestras no son equilibradas, solamente el 3% de las observaciones defaultean la tarjeta. Veamos como generar en la muestra de entrenamiento muestras balanceadas, para eso utilizaremos el metodo hibrido SMOTE.
+
+En primer lugar separo una muestra de validacion y una de testeo, las elijo de forma tal que en esas queden representadas las dos clases.
+```{r smote}
+
+set.seed(135)
+ind.def.si=which(default=="Yes")
+ind.def.no=which(default=="No")
+
+#tomo la training con la misma proporcion de datos de default que la muestra original
+train.index.ds=sample(ind.def.si,0.75*length(ind.def.si))
+train.index.dn=sample(ind.def.no,0.75*length(ind.def.no))
+
+train.index=sort(c(train.index.ds,train.index.dn))
+
+
+train=Default[train.index,]
+test=Default[-train.index,]
+
+
+# Ahora voy a balancear la muestra de entrenamiento usando SMOTE
+library(DMwR)
+
+#Hacemos una nueva muestra
+newtrain <- SMOTE(default ~ balance+student, train, perc.over = 400,perc.under=100)
+#Verificamos que se mantiene la poblacion  
+table(newtrain$default)
+
+#Ajustamos el modelo logistico a la muestra balanceada
+sal.smote=glm(default ~ balance+student,data=newtrain,family="binomial")
+sal.smote2=summary(sal.smote)
+# depende de dos parametros
+#perc.over= este numero rige la cantidade de observaciones que se originaran de la clase minoritaria,
+#nro mayor a 100, perc.over/100 indica la cantidad de observaciones que hay que generar por cada ua dela clase minoritaria
+#perc.under=controla la cantidad de observaciones de la muestra mayoritaria que seran elegidas en la muestra nueva de la clase mayoritariaeste numero rige la cantidade de observaciones que se originaran de la clase mayoritaria.
+
+#podemos tener automaticamente el modelo
+#newtrain <- SMOTE(default ~ balance+student, train, perc.over = 300,perc.under=100,learner = 'glm',family="binomial")
+#summary(newtrain)
+```
+Se puede ver que ahora la variable $\mathtt{student}$ dejo de ser significativa.
+
+Vamos a ver como cambian las predicciones al cambiar las muestras.
+
+```{r smote pred}
+
+
+pred.smote=predict(sal.smote,newdata = test,type="response")
+
+def.pred=rep("No",length(pred.smote))
+p0=0.5
+def.pred[pred.smote>p0]="Yes"
+confmat=table(test$default,def.pred,dnn = c("Real", "Predicha"))
+confmat
+
+
+pred.sal2=predict(salida2,newdata = test,type="response")
+p0=0.5
+def.pred2=rep("No",length(pred.sal2))
+def.pred2[pred.sal2>p0]="Yes"
+confmat2=table(test$default,def.pred2,dnn = c("Real", "Predicha"))
+confmat2
+```
+En este caso disminuye la probabilidad de clasificar a un como NO defaulteador a alguien que defaultea.
+
+
+```{r lasso}
+
+library(glmnet)
+library(caret)
+x <- model.matrix(salida1)[,-1]
+ajuste.lasso=glmnet(x, Default$default, family = "binomial", alpha = 1)
+plot(ajuste.lasso, label = T, xvar="lambda",lwd=2, main="Lasso Regression")
+
+
+#Cross validamos el parametro $\lambda$
+
+cv.lasso <- cv.glmnet(x, Default$default, alpha = 1, family = "binomial")
+
+plot(cv.lasso)
+#Ajustamos el modelo
+lasso.cv <- glmnet(x, Default$default, alpha = 1, family = "binomial",
+                lambda = cv.lasso$lambda.1sd)
+
+coef(lasso.cv,cv.lasso$lambda.1se)
+
+```
+
+
+El modelo queda con los mismos parametros que al hacer la regresion logistica usual, logicamente la estimacion de los coeficientes es ligeramente distinta.
+
+
+
+Este problema lo podriamos haber analizado utilizando otra funcion de enlace, $\mathtt{probit},$ que es la inversa de la funcion de distribucion acumuladad de una distribucion normal estandar. 
+
+
+```{r probit}
+
+salida3=glm(default ~ ., family = binomial(link = "probit"),data = Default)
+
+sumsal3=summary(salida3)
+
+sumsal3
+
+```
+
+
+Por ultimo, si tenemos varias categorias podemos utilizar una regresion de $\mathit{Poisson}.$
+ Consideramos el conjunto de datos que tiene las siguientes variables
+ \begin{itemize}
+ \item $\mathtt{num_awards}$ variable de respuesta, indica la cantidad de premios que gana un estudiante de secundario en un anio.
+ \item $\mathtt{math}$ variable continua, indica la not de cada estudiante en el examen final de matematica.
+ \item $\mathtt{prog}$ es una variable categorica con tres niveles indica en que programa esta inscripto el estudiante $\mathtt{General},$ $\mathtt{Academico}$ o $\mathtt{Vocational}.$
+ \end{itemize}
+
+Comenzamos haciendo un analisis descriptivo de los datos. 
+```{r poisson intro}
+
+library(sandwich)
+library(msm)
+
+p <- read.csv("https://stats.idre.ucla.edu/stat/data/poisson_sim.csv")
+p <- within(p, {
+  prog <- factor(prog, levels=1:3, labels=c("General", "Academic", 
+                                            "Vocational"))
+  id <- factor(id)
+})
+summary(p)
+
+
+#analizamos medias y desvios por programa.
+
+with(p, tapply(num_awards, prog, function(x) {
+  sprintf("M (SD) = %1.2f (%1.2f)", mean(x), sd(x))
+}))
+
+
+
+ggplot(p, aes(num_awards, fill = prog)) +
+  geom_histogram(binwidth=.5, position="dodge")
+```
+
+La media mas alta es la de academinca y la mas baja es la del general. En relacion a la cantidad de premios que obtienen se puede ver que solamente obtiennen mas de 3 premios estudiantes del track $\mathtt{Academic}$ y que los del track $\mathtt{General}$ a lo sumo obtienen un premio.
+
+
+Ahora hacemos la regresion de poisson.
+
+```{r poisson}
+m1= glm(num_awards ~ prog + math, family="poisson", data=p)
+salpremio=summary(m1)
+salpremio
+
+```
+Veamos las predicciones considerando el puntaje medio en $\mathtt{math}$ para cada uno de los programas.
+
+```{r poisson analisis}
+
+s1=data.frame(math=mean(p$math),prog=factor(1:3,levels=1:3,labels=levels(p$prog)))
+predict(m1, s1, type="response", se.fit=TRUE)
+
+
+```
+
+Ahora veamos como ajusta el modelo graficamente.
+
+
+```{r pois graf}
+
+p$phat <- predict(m1, type="response")
+
+## ordeno por programa y por nota de math
+p <- p[with(p, order(prog, math)), ]
+
+## graficamos
+ggplot(p, aes(x = math, y = phat, colour = prog)) +
+  geom_point(aes(y = num_awards), alpha=.5, position=position_jitter(h=.2)) +
+  geom_line(size = 1) +
+  labs(x = "Math Score", y = "Expected number of awards")
+
+```
+
+
+
+
+
+
+

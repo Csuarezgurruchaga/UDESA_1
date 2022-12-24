@@ -1,0 +1,3 @@
+"0","AlturaGalton_h = AlturaGalton[AlturaGalton$gender == ""male"", c(1:3, 5)]"
+"0",""
+"0","AlturaGalton_m = AlturaGalton[AlturaGalton$gender == ""female"", c(1:3, 5)]"

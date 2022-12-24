@@ -1,0 +1,135 @@
+---
+title: "SVMkNN"
+author: "Marcela"
+date: "16 de agosto de 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(e1071)
+library(mlbench)
+library(ggplot2)
+```
+Vamos a considerar como ejemplo el conjunto de datos $\mathtt{sonar}$ de la libreria $\mathtt{mlbench}.$ El objetivo es poder disernir entre dos tipos de seniales, unas que rebotan contra un cilindro metalico y otras contra rocas cilindricas. Cada observacion del conjunto de datos conta de un conjunto de 60 parametros, todos ellos entre $0.0$ y $1.0.$ Cada coordenada reprecenta la energia en una banda de frecuencia especifica, integrada en un lapso de tiempo preestablecido. La etiquetas de las dos poblaciones son $\mathtt{R}$ para las rocas y $\mathtt{M}$ para los metales.  
+
+Hacemos un analisis exploratorio visual, utilizando boxplots.
+
+
+
+```{r datos sonar}
+data("Sonar")
+
+sonar.df=data.frame(stack(Sonar[,1:60]),rep(Sonar$Class,60))
+ggplot(sonar.df,aes(x=ind,y=values,fill=rep.Sonar.Class..60.))+geom_boxplot()
+```
+
+Separamos la muestra dejando el 75% como muestra de entrenamiento y el 25% restante como muestra de clasificacion.
+
+
+```{r clasifico svm}
+
+set.seed(324)
+training_sample <- sample(c(TRUE, FALSE), nrow(Sonar), replace = T, prob = c(0.75,0.25))
+train <- Sonar[training_sample, ]
+test <- Sonar[!training_sample, ]
+#Vamos a clasificar, tiene dos clases, primero cross validamos la 
+# el costo, utilizamos el clasificador lineal 
+tune.out <- tune(svm, Class~., data = train, kernel = "linear",
+                 ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+bestmod <- tune.out$best.model
+bestmod
+```
+
+Tenemos 93 support vectors, 49 del grupo de los metales y 44 de las rocas y el valor del costo crossvalidado es 0.1. A continuacion veremos como son las predicciones para la muestra de testeo.
+
+
+```{r predicciones svm}
+Class.pred=predict(bestmod,test)
+misclass =table(predict = Class.pred, truth = test$Class)
+
+misclass
+```
+
+La tasa global de erroes es de 10.6%
+
+
+Repetimos el proceso pero ahora utilizamos el nucleo radial.
+
+```{r svm radial}
+
+tune.out <- tune(svm, Class~., data = train, kernel = "radial",
+                 ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100),
+                               gamma = c(0.5,1,2,3,4)))
+bestmod <- tune.out$best.model
+summary(bestmod)
+```
+En este caso tenemos 61 support vectors (78 en el conjunot de metales y 85 en de rocas). Al cross validar el costo queda que el costo optimo es 5.
+
+Nuevamente clasificamos las observaciones de la muestra de entrenamiento.
+
+```{r svm clasif radial}
+Class.pred=predict(bestmod,test)
+misclass =table(predict = Class.pred, truth = test$Class)
+misclass
+```
+En este caso especifico la clasificacion resulta ser mucho peor, hay un 40% de los datos mal clasificados.
+
+
+
+Pasamos ahora a la clasificacion por vecinos mas cercanos. En este caso, probaremos primero sin estandarizar los datos y luego estandarizandolos. En este caso al estar todos en la misma escala no es necesario estandarizar la escala, sin embargo al hacer los boxplots vemos que hay diferencias importantes en algunas frecuencias. El numero de vecinos mas cercanos los cross validaremos con 5-fold-cross validation, seleccionando $k=1$. 
+Luego, clasificaremos la muestra de testeo.
+
+```{r knn}
+library(caret)
+trControl <- trainControl(method  = "cv", number  = 5)
+
+fit <- train(Class ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 1:10),
+             trControl  = trControl,
+             metric     = "Accuracy",
+             data       = train)
+fit
+# la mejor accuracy es para k=1
+library(class)
+pred.knn=knn(train[,1:60],test[,1:60],cl=train$Class,k=fit$bestTune)
+
+conf.matrix <- table(test$Class, pred.knn)
+rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+
+
+```
+En este caso, tenemos 6 observaciones mal clasificadas, es decir el 12.77% de la muestra de validacion.
+
+Repetimos estandarizando los datos para que tengan media cero y varianza uno.
+
+```{r knn estandarizado}
+
+train.st=scale(train[,1:60])
+test.st=scale(test[,1:60])
+
+train.st.df=data.frame(train.st,train$Class)
+trControl <- trainControl(method  = "cv", number  = 5)
+
+fit <- train(train.Class ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 1:10),
+             trControl  = trControl,
+             metric     = "Accuracy",
+             data       = train.st.df)
+fit
+# la mejor accuracy es para k=1
+pred.knn=knn(train.st[,1:60],test.st[,1:60],cl=train$Class,k=fit$bestTune)
+
+conf.matrix <- table(test$Class, pred.knn)
+rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+
+
+```
+
+Vemos como obtuvimos una tasa de mala clasificacion mucho mejor al estandarizar los datos, solamente el 4.2% de las observaciones de la muestra de testeo están mal clasificadas.  

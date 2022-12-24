@@ -1,0 +1,1 @@
+"0","plot(densidad_outliers_gmm, what=""density"", data=geyser_outliers, col = ""blue"")"

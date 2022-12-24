@@ -1,0 +1,5 @@
+"0","plot(y = studres(modelo_cerebro_3), x = modelo_cerebro_3$fitted.values,"
+"0","     main = ""RESIDUOS STUDENTIZADOS VS PREDICHOS (modelo 3)"","
+"0","     xlab = ""FITTED VALUES"","
+"0","     ylab = ""RESIDUALS"","
+"0","     ylim = c(-3.2, 3.2))"

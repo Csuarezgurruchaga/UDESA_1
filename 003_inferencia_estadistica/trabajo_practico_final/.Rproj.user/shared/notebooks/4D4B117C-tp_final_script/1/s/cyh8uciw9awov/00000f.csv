@@ -1,0 +1,7 @@
+"0","escenario2 <- function (medias, J) {"
+"0","  grupos = cbind(medias[1] + runif(n = J, min = -3, max = 3), "
+"0","                 medias[2] + runif(n = J, min = -3, max = 3),"
+"0","                 medias[3] + runif(n = J, min = -3, max = 3))"
+"0","  return(grupos)"
+"0","  }"
+"0",""

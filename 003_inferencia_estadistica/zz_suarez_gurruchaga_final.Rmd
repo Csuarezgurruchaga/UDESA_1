@@ -1,0 +1,69 @@
+
+1a)
+```{r}
+qnorm(p = .95)
+```
+1b)
+```{r}
+pnorm(1.64, mean = 1.5) - pnorm(-1.64, mean = 1.5)
+```
+
+1c)
+```{r}
+muestra <- c(23.61, 24.62, 26.38, 24.72, 26.11, 28.02, 24.71, 33.74, 16.52)
+mean(muestra)
+```
+
+1d)
+```{r}
+pnorm(-2.536) + (1 - pnorm(2.536))
+```
+1e)
+```{r}
+(S <- sd(muestra))
+```
+
+```{r}
+qt(p = 0.95, df = 9-1)
+```
+
+2)
+Seteo una semilla para hacer reproducible con los mismos valores el experimento
+```{r}
+set.seed(1)
+```
+2a)
+Creo una funcion, que me devuelve la estimacion del parametro lambda por MVS, al recibir una muestra "m"
+```{r}
+estimame_lambda = function(m) {
+ return(1/mean(m)) 
+}
+```
+
+Creo un vector de estimadores con 1000 muestras exponenciales de tamaño n = 8, y con un lambda 3. A estas muestras, les estimo su parametro lambda con mi funcion "estimame_lambda", que me devuelve el valor estimado por MV, del parametro poblacional. Esta operacion me genera 1000 estimadores de lambda, 1 por cada muestra, y lo guardo en vector_estimadores. Posteriormente, calculo la varianza de mi estimador haciendo var(vector_estimadores).
+```{r}
+lambda_verdadero = 3
+vector_estimadores = replicate(1000, 
+                               estimame_lambda(rexp(n = 8, rate = lambda_verdadero)))
+
+(varianza_estimador = var(vector_estimadores))
+```
+2b)
+Calculo el sesgo de mi estimador
+```{r}
+(sesgo_estimador = mean(vector_estimadores))
+```
+Calculo el valor del error cuadratico medio de mi estimador, utilizando la formula que relaciona sesgo y varianza.
+```{r}
+(ECM = varianza_estimador + (sesgo_estimador ^ 2))
+```
+2c)
+El error de estimacion lo calculamos a partir de la diferencia con el valor del parametro verdadero, y buscamos que sea inferior o igual a 0.5.
+```{r}
+mean(abs(vector_estimadores - lambda_verdadero) <= 0.5)
+```
+
+```{r}
+
+```
+

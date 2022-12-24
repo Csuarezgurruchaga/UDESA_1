@@ -1,0 +1,51 @@
+---
+title: "Ejemplo de utilización de notebook para el tp"
+output: html_document
+---
+
+Las explicaciones las pueden escribir aca. El código va en el r-chunk. Recuerden ser prolijos, poner nombres apropiados a las funciones y las variables. Reutilicen su código!
+```{r}
+estimador1 = function(muestra){ #Esta función toma un array de muestra y devuelve el promedio de los dos primeros elementos
+  (muestra[1] + muestra[2])/2
+}
+
+```
+
+# Ejercicio 2
+
+Se pueden hacer listas y editar el texto
+
+1. Primer **punto**
+3. Hay $\LaTeX$ para los fans: $\hat{ \theta }_{mv} = \max \{ X_1, \ldots, X_n \}$  
+4. Muestra $X_1, \ldots, X_n \sim \mathcal{N}(0,1)$. 
+Los gráficos se hacen en el r-chunk
+
+```{r}
+plot(x = 1:10, y = 1:10 +rnorm(10, 0, 1), col = "blue", main = "Gráfico de prueba",
+                                        xlab = "Eje x", ylab = "Eje y")
+lines( x = 1:10, y = 1:10, lwd = 3, col = "orange") # grafica lineas.
+```
+
+# Ejercicio 3
+## Algunos comandos útiles
+```{r}
+muestra = runif(10, 0, 1) #sortea uniformes
+muestra
+replicate(5, mean( runif(10, 0,1))) # repite 5 veces una instruccion
+median(muestra) #calcula la mediana de un vector
+max(muestra) #Caclula el máximo de un vector
+var(muestra) #Calcula la varianza muestral del vector.
+seq(from =0, to = 1, by = 0.1) #Arma una grilla entre el 0 y el 1 con pasos de 0.1
+set.seed(1234) #Fija la semilla para que el experimento sea reproducible.
+```
+
+## Otras cosas
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

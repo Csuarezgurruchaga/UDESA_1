@@ -1,0 +1,3 @@
+"0","plot(esperanza2015$life.2015 ~ esperanza2015$child.2015, "
+"0","     col = ""blue"", main = ""LIFE ~ CHILD"", cex = 0.8,"
+"0","     xlab = ""Tasa de mortalidad"", ylab = ""Esperanza de vida"")"

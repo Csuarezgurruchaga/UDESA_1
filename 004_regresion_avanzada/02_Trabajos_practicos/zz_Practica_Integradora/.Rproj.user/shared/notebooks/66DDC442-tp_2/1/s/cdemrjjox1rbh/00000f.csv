@@ -1,0 +1,3 @@
+"0","plot(esperanza2$life.2015 ~ esperanza2$child.2015, pch = 16,"
+"0","     main = ""INTERVALOS DE CONFIANZA Y PREDICCION MODELO 2"","
+"0","     col = ""brown"", lwd = 2, xlab = ""CHILD"", ylab = ""ESPERANZA DE VIDA"")"

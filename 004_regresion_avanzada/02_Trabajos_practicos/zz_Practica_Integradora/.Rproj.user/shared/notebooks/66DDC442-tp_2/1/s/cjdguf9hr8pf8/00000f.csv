@@ -1,0 +1,6 @@
+"0","par(mfrow = c(1, 2), oma = c(0, 0, 2, 0))"
+"0",""
+"0",""
+"0",""
+"0","hist(AlturaGalton_h$childHeight, col = ""brown"","
+"0","                    xlab = ""ALTURA DEL HIJO"", main = """")"

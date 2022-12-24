@@ -1,0 +1,7 @@
+"0","library(dplyr)"
+"0",""
+"0","SegVial_spain = SegVial %>% filter(Pais == ""Spain"")"
+"0","SegVial_france = SegVial %>% filter(Pais == ""France"")"
+"0","SegVial_united_kingdom = SegVial %>% filter(Pais == ""United Kingdom"")"
+"0","SegVial_italy = SegVial %>% filter(Pais == ""Italy"")"
+"0","SegVial_norway = SegVial %>% filter(Pais == ""Norway"")"

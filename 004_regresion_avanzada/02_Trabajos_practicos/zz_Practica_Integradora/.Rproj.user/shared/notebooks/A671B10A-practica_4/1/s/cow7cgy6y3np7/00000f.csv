@@ -1,0 +1,6 @@
+"0","datos %>% "
+"0","  select(sexo, peso) %>% "
+"0","  plot(col = c(""pink"", ""blue""), "
+"0","       main = ""Distribucion del peso del recien nacido en funcion del genero"","
+"0","       xlab = ""SEXO"","
+"0","       ylab = ""PESO [gramos]"")"

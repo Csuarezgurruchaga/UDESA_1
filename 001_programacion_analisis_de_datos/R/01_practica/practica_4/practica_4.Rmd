@@ -1,0 +1,507 @@
+---
+title: "Practica_4"
+output: html_document
+date: '2022-05-07'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+a <- load("births2006smpl.rda")
+
+```
+
+```{r}
+datos <- births2006.smpl
+head(datos)
+```
+
+```{r}
+class(datos)
+```
+
+```{r}
+dim(datos)
+
+names(datos) <- c("DOB_MM", "DOB_WK", "edad madre", "num hijos", "peso ganado madre", "sexo", "apgar","educ", "visitas medicas", "gestacion", "tipo parto", "parto multiple", "peso")
+```
+
+```{r}
+library(tidyverse)
+datos <- datos %>% rename("mes" = "DOB_MM"  , "dia" = "DOB_WK")
+```
+
+```{r}
+(maximo <- max(datos$gestacion))
+
+datos[datos$gestacion == maximo, ]$gestacion = NA
+
+mean(datos$gestacion, na.rm=T)
+```
+```{r}
+dias <- c("domingo", "lunes", "martes","miercoles", "jueves", "viernes", "sabado")
+datos$dia <- as.factor(datos$dia)
+levels(datos$dia) = dias
+```
+
+# ```{r}
+# dias <- c("lunes", "martes", "miercoles", "jueves", "viernes", "sabado"," domingo")
+# datos$dia <- as.factor(datos$dia)
+# levels(datos$dia) = dias
+# ```
+
+```{r}
+datos <- mutate(datos, W = peso/gestacion)
+```
+
+```{r}
+datos2 = datos %>% 
+  filter(sexo == "F")
+```
+
+```{r}
+
+datos %>% 
+  filter(gestacion < 30)
+
+```
+
+```{r}
+datos %>% 
+  select("visitas medicas")
+```
+
+```{r}
+datos %>% 
+  select("mes", "dia", "num hijos")
+```
+
+```{r}
+datos %>% 
+  arrange(datos$`edad madre`)
+```
+
+```{r}
+datos %>% 
+  ungroup() %>% 
+  group_by(datos$educ)
+```
+
+```{r}
+datos %>% 
+  group_by(educ) %>% 
+  summarise(promedio = mean(datos$`visitas medicas`))
+```
+
+```{r}
+class(datos$peso)
+```
+
+```{r}
+str(datos)
+```
+
+```{r}
+levels(datos$educ)
+```
+
+```{r}
+datos$educ <- factor(datos$educ, levels = c("No formal education", 
+                                           "1 Years of elementary school",
+                                           "2 Years of elementary school",
+                                           "3 Years of elementary school",
+                                           "4 Years of elementary school",
+                                           "5 Years of elementary school",
+                                           "6 Years of elementary school",
+                                           "7 Years of elementary school",
+                                           "8 Years of elementary school",
+                                           "1 year of high school" ,
+                                           "2 years of high school",
+                                           "3 years of high school",
+                                           "4 years of high school",
+                                           "1 year of college",
+                                           "2 years of college",
+                                           "3 years of college",
+                                           "Not on certificate",
+                                           "NULL"))
+```
+
+3a) i) Realice un histograma del peso de los recien nacidos. Hint: hist(⋆)
+
+```{r}
+hist(datos$peso)
+```
+
+ii) ¿Para que sirven los argumentos xlab, main, col, breaks en el histograma? hist(datos\$peso,xlab="Peso",main="Histograma del peso",col=2)
+
+```{r}
+hist(datos$peso, xlab = "Peso", main = "Histograma del peso", col=2)
+```
+
+iii) Calcule medidas de resumen del peso. Hint: mean(⋆,na.rm=T), median(⋆), sd(⋆), mad(⋆), IQR(⋆)
+
+```{r}
+(mean(datos$peso, na.rm=T)) 
+(median(datos$peso, na.rm = T))
+sd(datos$peso, na.rm = T) 
+mad(datos$peso, na.rm = T) 
+IQR(datos$peso, na.rm = T)
+```
+
+iv) Realice un boxplox de la variable peso. Hint: boxplot(⋆)
+
+```{r}
+datos$peso %>% boxplot
+```
+
+v)  Cambie el color del boxplot anterior
+
+```{r}
+datos$peso %>% boxplot(col = "blue")
+```
+
+vi) Grafique la acumulada empirica. Hint: plot(ecdf(⋆))
+
+```{r}
+plot(ecdf(datos$peso))
+```
+
+vii) Realice un qqplot usando alguna distribución "razonable". Hint: vaya a la teórica.
+
+```{r}
+qqnorm(datos$peso)
+```
+
+viii) Realice un qqplot usando la distribución exponencial con λ = 1. Hint: goto Hint 3 (a) vii.
+
+```{r}
+cuantiles_teoricos = qexp(c(1:length(datos$peso)) / (length(datos$peso) + 1), 1)
+
+qqplot(cuantiles_teoricos, datos$peso, 
+       xlab = "Cuantiles Teoricos Exp(1)", 
+       ylab = "Cuantiles muestrales")
+```
+
+b)  Calcule medidas de resumen de la edad de la madre. Hint: mean(⋆), median(⋆), summary(⋆), max(⋆), min(⋆), sd(⋆), mad(⋆), IQR(⋆)
+
+```{r}
+summary(datos$`edad madre`, na.rm = T)
+max(datos$`edad madre`, na.rm = T)
+min(datos$`edad madre`, na.rm = T)
+(mean(datos$`edad madre`, na.rm=T)) 
+(median(datos$`edad madre`, na.rm = T))
+sd(datos$`edad madre`, na.rm = T) 
+mad(datos$`edad madre`, na.rm = T) 
+IQR(datos$`edad madre`, na.rm = T)
+```
+
+4.- Variable categórica. (a) Estudie la variable tipo parto.
+
+i)  Construya una tabla de frecuencia con la variable tipo parto. Hint table(⋆)
+
+```{r}
+(a <- table(datos$`tipo parto`))
+```
+
+ii) ¿Cuantos partos fueron por cesárea (C-section)?
+
+```{r}
+table(datos$`tipo parto`)[1]
+```
+
+iii) Utilizando la tabla del item (a) realice un diagrama de barra. Hint barplot(⋆)
+
+```{r}
+barplot(a, col = "violet")
+```
+iv) A partir de la tabla del item (a) realice un diagrama de torta. Hint pie(⋆)
+```{r}
+pie(a)
+```
+(b) Estudie la variable dia del parto.
+i)  Realice un diagrama de barra.
+```{r}
+datos$dia %>% 
+  table() %>% 
+  barplot(col = "pink")
+```
+ii) ¿Quedaron ordenados los dias? Vuelva a realizar un diagrama de barra pero ahora ordene los dias haciendo algo similar a lo realizado en el ejercicio 2 (d).
+```{r}
+dias <- c("lunes", "martes", "miercoles", "jueves", "viernes", "sabado","domingo")
+datos$dia <- factor(datos$dia, levels = dias)
+
+datos$dia %>% 
+  table() %>% 
+  barplot(col = "pink")
+
+```
+Estudiando la relación entre dos variables
+
+5.- Relación entre una variable numerica y una categorica.
+(a) Estudie la relacion entre peso del recien nacido y la multiplicidad del parto.
+i.  Grafique esta relacion plot(datos$parto multiple, datos$peso)
+
+```{r}
+datos %>% 
+  select(c("parto multiple", "peso")) %>% 
+  plot()
+
+```
+ii) ¿Como se interpreta el grafico anterior?
+
+Cuantos más chicos nacen en el parto, menor es el peso de cada bebé por el lugar que ocupan en el vientre, y el tamaño maximo que el mismo se puede expandir.
+
+(b) Estudie la relacion entre la edad de la madre y la educacion.
+i)  Grafique esta relación. Verifique que tiene bien ordenada la categoria educación.
+
+```{r}
+library("ggplot2")
+graf <- datos %>% select(educ, `edad madre`)
+  ggplot(graf, aes(educ, `edad madre`)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust=1))
+```
+
+ii) ¿Se puede observar alguna relacion entre las dos variables?
+
+En la mayoria de los casos vemos que las familias se originan entre los 20 y 30 años de la madre.
+Los mayores niveles de dispersion de edad en madres, los vemos en los casos "null, not on certificate y no formal education"
+La dispersion de la edad de las madres en los niveles educativos basico y secundario, son similares.
+La menor dispersion de los años en las madres, las vemos en los casos que estan cursando su 2do y 3er año estudios universitarios, probablemente porque son nacimientos mas planificados, a diferencia de los otros casos que son mas espontaneos. Tambien vemos en estos casos, que la mediana de las madres es superior a los otros escenarios.
+
+iii) Realice el grafico del item i pero ahora haciendo que la cajas de la primaria tengan el mismo color, lo mismo para el secundario y para la universidad. Hint: col=c(⋆1,⋆2,. . . , ⋆n)
+
+```{r}
+elementary <- c("1 Years of elementary school", "2 Years of elementary school",
+                "3 Years of elementary school", "4 Years of elementary school",
+                "5 Years of elementary school", "6 Years of elementary school",
+                "7 Years of elementary school", "8 Years of elementary school")
+
+high_school <- c("1 year of high school", "2 years of high school",
+                 "3 years of high school","4 years of high school")
+
+college <- c("1 year of college", "2 years of college", "3 years of college")
+
+other <- c("Not on certificate", "NULL", "No formal education")
+
+
+datos <- datos %>% 
+  mutate(nivel_estudio = case_when(educ %in% elementary ~ "elementary",
+                                   educ %in% high_school ~ "high school",
+                                   educ %in% college ~ "college",
+                                   educ %in% other ~ "other"))
+
+
+graf <- datos %>% select(educ, `edad madre`, nivel_estudio)
+  ggplot(graf, aes(educ, `edad madre`, color = nivel_estudio)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust=1))
+
+```
+
+6.- Relacion entre una variable categorica y otra categorica.
+
+(a) Estudie la relacion entre el tipo de parto y el dıa del parto.
+i)  ¿Que pasa si escribe table(datos$tipo parto,datos$dia)?
+
+```{r}
+#Estudio de 2 variables categoricas
+table(datos$`tipo parto`, datos$dia)
+```
+
+ii) Guarde la informacion de la tabla en alguna variable. Hint: ⋆= table(datos$tipo parto,datos$dia)
+
+```{r}
+tabla <- table(datos$`tipo parto`,datos$dia)
+```
+
+iii) Haga un barplot de la tabla, utilice beside=T dentro del barplot. Y represente con los colores rojo y verde las barras.
+
+```{r}
+
+
+barplot(tabla, beside =  T , col = c("red", "green"))
+
+```
+
+```{r}
+plot(datos$gestacion, datos$apgar)
+```
+
+No se puede observar ninguna relacion clara
+
+6.- Relacion entre una variable categorica y otra categorica.
+
+(a) Estudie la relacion entre el tipo de parto y el dia del parto.
+
+i.  ¿Que pasa si escribe table(datos$tipo parto,datos$dia)?
+
+```{r}
+aggregate(datos$apgar, 
+                by = list(datos$gestacion), 
+                mean, na.rm=T)
+```
+
+ii. Guarde la informacion de la tabla en alguna variable. Hint: ⋆= table(datos$tipo parto,datos$dia)
+
+```{r}
+(tabla3 = aggregate(datos$apgar, 
+                    by = list(datos$gestacion), 
+                    mean, na.rm=T))
+```
+
+iii. Haga un barplot de la tabla, utilice beside=T dentro del barplot. Y represente con los colores rojo y verde las barras.
+
+```{r}
+barplot(width = tabla3$Group.1, 
+        height = tabla3$x, 
+        xlab= "gestacion", 
+        ylab = "apgar", 
+        beside=T,
+        col = c("red", "green"))
+```
+
+7)  Relacion entre una variable numerica y otra numerica
+
+a)  Estudie la relacion entre el tiempo de gestacion y el indice Apgar
+b)  Grafique los datos. plot(datos$gestacion, datos$apgar)
+
+```{r}
+plot(datos$gestacion, datos$apgar)
+```
+
+ii) ¿Puede observar alguna relacion?
+
+Este grafico nos dice muy poco de los datos. Esperaríamos que a mayor cantidad de semana de gestación, mayor sea el índice. Sin embargo, se ven muchos puntos dispersos porque este gráfico no tiene en cuenta la superposición de puntos.
+
+iii) Grafique el indice Apgar promedio para cada uno de los valores de gestacion. tabla3=aggregate(datos$apgar,list(datos$gestacion), mean,na.rm=T) plot(tabla3,xlab="gestacion",ylab="apgar")
+
+```{r}
+tabla3 = aggregate(datos$apgar,list(datos$gestacion), mean,na.rm=T)
+plot(tabla3,xlab="gestacion",ylab="apgar")
+```
+
+iv) ¿Ahora puede visualizar alguna relacion?
+
+Ahora sí encontramos una relación más clara. A medida que aumentan las semanas de gestacion del bebe, aumenta el índice de apgar.
+
+FINAL
+5)
+
+1) Una variable
+Variable categorica
+¿Estudie analitica y graficamente, cuantos varones y cuantas mujeres nacieron?, ¿Cual fue el genero que predomino?
+```{r}
+(n_masculinos <- datos %>% 
+                  select(sexo) %>% 
+                  filter(sexo == "M") %>% 
+                  nrow())
+
+(n_femeninos <- datos %>% 
+                select(sexo) %>% 
+                filter(sexo == "F") %>% 
+                nrow())
+
+plot(datos$sexo, main = "Cantidad de nacimiento por generos",
+                xlab = "GENERO",
+                ylab = "CANTIDAD",
+                col = c("pink","blue"))
+
+legend("topright", c("FEMENINO", "MASCULINO"),
+                  fill = c("pink", "blue"))
+
+print(paste0("Nacieron ", n_masculinos, " bebes masculinos y ", n_femeninos, " bebes femeninos, y el genero que predomino fue el masculino"))
+```
+2) Una variable
+Variable numerica
+Realice un histograma de la distribucion del peso ganado por la madre.
+```{r}
+hist(datos$`peso ganado madre`, 
+     main = "PESO GANADO POR LA MADRE",
+     xlab = "CANTIDAD DE Kg",
+     ylab = "FRECUENCIA",
+     col = "blue")
+
+
+
+abline(v = mean(datos$`peso ganado madre`, na.rm = T), 
+       col = "red", lwd = 3)
+
+legend("topright", c("PESO PROMEDIO AUMENTADO"),
+                  fill = c("red"))
+```
+En promedio, una madre aumenta aproximadamente 31kg en el proceso del embarazo.
+
+3) Dos variables 
+Relacion entre una variable numerica y una categorica
+Estudie el peso del recien nacido en funcion del genero
+```{r}
+datos %>% 
+  select(sexo, peso) %>% 
+  plot(col = c("pink", "blue"), 
+       main = "Distribucion del peso del recien nacido en funcion del genero",
+       xlab = "SEXO",
+       ylab = "PESO [gramos]")
+
+legend("topright", c("FEMENINO", "MASCULINO"),
+                  fill = c("pink", "blue"))
+```
+Observamos que no hay una gran diferencia en el peso del recien nacido ya sea hombre o mujer, y la dispersion de los pesos es muy similar tambien. Vemos que la mediana de los pesos del genero masculino esta un poco por encima del femenino.
+
+
+3) Dos variables
+Relacion entre una variable categorica y una variable numerica
+Estudie graficamente la relacion entre el peso ganado por la madre y la cantidad de bebes nacidos en el parto.
+```{r}
+datos %>% 
+  select(`parto multiple`, `peso ganado madre`) %>% 
+  plot(col = c("red", "blue", "yellow","green", "brown"), 
+       main = "AUMENTO DE PESO DE LA MADRE vs CANTIDAD DE BEBES",
+       xlab = "CANTIDAD DE BEBES",
+       ylab = "PESO GANADO [kg]")
+
+# legend("topright", c("CESAREA", "DESCONOCIDO", "NATURAL"),
+#                   fill = c("red", "blue", "yellow"))
+```
+Observamos que a medida que aumenta el numero de nacimientos por parto, el peso que aumenta la madre en el periodo de embarazo es mayor.
+
+5) Dos variables 
+Relacion entre una variable categorica y una numerica
+Estudie graficamente la relacion entre el tipo de parto que finalmente se realizo y la cantidad de consultas previas al mismo.
+```{r}
+datos %>% 
+  select(`tipo parto`, `visitas medicas`) %>% 
+  plot(col = c("red", "blue", "yellow"), 
+       main = "Relacion entre el tipo de parto y la cantidad de consultas medicas",
+       xlab = "TIPO DE PARTO",
+       ylab = "CANTIDAD DE CONSULTAS MEDICAS")
+
+legend("topright", c("CESAREA", "DESCONOCIDO", "NATURAL"),
+                  fill = c("red", "blue", "yellow"))
+```
+Dado que parece poco logico un valor de 99 visitas medicas, vamos a cambiar este valor, ya que no aporta mucho estas unicas 3 personas en caso de ser real y no un error.
+
+```{r}
+maximo2 <- max(datos$`visitas medicas`)
+
+datos[datos$`visitas medicas` == maximo2, ]$`visitas medicas` = median(datos$`visitas medicas`)
+
+datos %>% 
+  select(`tipo parto`, `visitas medicas`) %>% 
+    plot(col = c("red", "blue", "yellow"), 
+       main = "Relacion entre el tipo de parto y la cantidad de consultas medicas",
+       xlab = "TIPO DE PARTO",
+       ylab = "CANTIDAD DE CONSULTAS MEDICAS")
+
+# legend("topright", c("CESAREA", "DESCONOCIDO", "NATURAL"),
+#                   fill = c("red", "blue", "yellow"))
+
+```
+
+
+
+
+
+

@@ -1,0 +1,85 @@
+1)
+```{r}
+plot(seq(0, 1, 0.1),3 * seq(0, 1, 0.1) ^ 2, main = "Funcion densidad de probabilidad",
+                                        xlab = "x",
+                                        ylab = "X",
+                                        type = "l")
+
+f <- function(x) {
+3 * x^2
+}
+
+integrate(f, lower= 0.1, upper= 0.5) $value
+```
+3 a)
+```{r}
+pexp(q = 2, rate = 1)
+```
+3 b)
+```{r}
+pexp(q = 8, rate = 1) - pexp(q = 2, rate = 1)
+```
+3 c)
+```{r}
+qexp(0.25, rate = 1, lower.tail = F)
+```
+
+5)
+```{r}
+qexp(0.2, rate = 0.00001)
+qexp(0.4, rate = 0.00001)
+qexp(0.6, rate = 0.00001)
+qexp(0.8, rate = 0.00001)
+```
+6 a)
+```{r}
+pnorm(q = 0, mean = 5, sd = 10) # P(X<0)
+pnorm(q = 10, mean = 5, sd = 10, lower.tail = F) # P(X>10)
+pnorm(q = 15, mean = 5, sd = 10, lower.tail = F) # P(X>=15)
+```
+6 b)
+```{r}
+pnorm(q = 15, mean = 5, sd = 10) - pnorm(q = -20, mean = 5, sd = 10) # P(-20 < X < 15)
+pnorm(q = 30, mean = 5, sd = 10) - pnorm(q = -5, mean = 5, sd = 10) # P(-5 < X < 30)
+```
+6 c)
+```{r}
+qnorm(p = 0.05, mean = 5, sd = 10, lower.tail = F)
+```
+6 d)
+```{r}
+qnorm(p = 0.05, mean = 5, sd = 10, lower.tail = F)
+```
+7 a)
+```{r}
+pexp(1, rate = 2) #P(X=0) = P(T<=1)
+pexp(2, rate = 2) - pexp(1, rate = 2) # P(X=1) = P(T<=2) - P(T<=1)
+pexp(2, rate = 2, lower.tail = F)  # P(X=2) = P(T>=2) = P(T>2)
+```
+7 b)
+```{r}
+k = 0:10
+vector_prob <- pexp(k+1, rate = 2)  - pexp(k, rate = 2) 
+
+
+barplot(vector_prob ~ k, main = "Funcion densidad de probabilidad de Y",
+                         ylab = "Probabilidad")
+```
+8 a)
+```{r}
+x <- seq(-50, 50, 0.1)
+plot(1/2 + (1/pi) * atan(x) ~ x, main = "Distribucion acumulada de Cauchy",
+                                 ylab = "Probabilidad",
+                                 type = "l",
+                                 lwd = 3,
+                                 col = "pink")
+abline(h = 0.9, lty = 2)
+abline(v = 3.077, lty = 2)
+```
+8 b)
+```{r}
+qcauchy(0.1, location = 0, scale = 1, lower.tail = F, log.p = FALSE)
+```
+
+
+

@@ -1,0 +1,6 @@
+"0","barplot(width = tabla3$Group.1, "
+"0","        height = tabla3$x, "
+"0","        xlab= ""gestacion"", "
+"0","        ylab = ""apgar"", "
+"0","        beside=T,"
+"0","        col = c(""red"", ""green""))"

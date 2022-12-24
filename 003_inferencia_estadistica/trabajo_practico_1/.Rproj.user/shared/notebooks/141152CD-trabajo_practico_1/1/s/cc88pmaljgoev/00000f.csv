@@ -1,0 +1,8 @@
+"0","b_2 <- function(muestra) {"
+"0","  return(max(muestra))"
+"0","}"
+"0","b_2(muestra)"
+"1","[1]"
+"1"," 0.9404673"
+"1","
+"

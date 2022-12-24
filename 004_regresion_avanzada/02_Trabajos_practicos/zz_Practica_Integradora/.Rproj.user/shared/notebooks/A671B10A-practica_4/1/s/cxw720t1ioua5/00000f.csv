@@ -1,0 +1,2 @@
+"0","datos %>% "
+"0","  select(""mes"", ""dia"", ""num hijos"")"

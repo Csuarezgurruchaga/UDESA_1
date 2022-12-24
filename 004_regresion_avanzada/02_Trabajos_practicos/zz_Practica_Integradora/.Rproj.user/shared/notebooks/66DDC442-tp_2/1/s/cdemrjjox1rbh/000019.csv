@@ -1,0 +1,3 @@
+"0",""
+"0","lines(y = summary_life_2$coefficients[1] + summary_life_2$coefficients[2] * data_life$child.2015 + summary_life_2$coefficients[3] * data_life$child.2015^2,"
+"0","      x = data_life$child.2015, col = ""violet"", lwd = 2)"

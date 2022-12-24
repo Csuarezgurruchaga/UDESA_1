@@ -1,0 +1,25 @@
+Ciudad Renta Fracaso
+ Parla  8.864 26
+ Fuenla  9.391 26.8
+ Leganes  9.877 22.5
+ Mostoles  9.977 21.1
+ Arganda  10.052 36.5
+ Torrejon  10.369 31
+ Getafe  10.555 19.8
+ Coslada  10.736 17
+ Pinto  10.846 26.6
+ Alcorcon  10.888 25.8
+ Alcala  10.942 27.8
+ Collado  11.913 18.7
+ Colmenar  12.587 22.5
+ Arroyom  12.74 24.7
+ SSReyes  13.041 17.2
+ ElEscor  13.189 20.6
+ Rivas  13.903 11.9
+ Alcob  16.256 19
+ TresCan  17.562 11.2
+ Torrelo  18.812 8.1
+ Boadilla  19.368 13
+ Majadah  19.477 16
+ Pozuelo  22.05 13
+ 

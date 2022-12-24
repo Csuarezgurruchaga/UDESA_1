@@ -1,0 +1,7 @@
+"0","datos %>% "
+"0","  filter(datos$`tipo parto` == ""C-section"") %>% "
+"0","  nrow()"
+"1","[1]"
+"1"," 132068"
+"1","
+"

@@ -1,0 +1,8 @@
+"0","datos$educ <- factor(datos$educ,levels = c(""No formal educ."",""1Y elementary"","
+"0","                                           ""2Y elementary"",""3 Years of elementary school"","
+"0","                                           ""4Y elementary"",""5Y elementary"","
+"0","                                           ""6Y elementary"",""7Y elementary"","
+"0","                                           ""8Y elementary"",""1Y high"",""2Y high"","
+"0","                                           ""3 years of high school"",""4Y high"","
+"0","                                           ""1Y college"",""2Y college"",""3Y college"","
+"0","                                           ""Not on certificate"", ""NULL"" ))"

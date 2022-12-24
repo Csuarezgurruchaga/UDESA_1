@@ -1,0 +1,6 @@
+"0","datos %>% "
+"0","  select(`tipo parto`, `visitas medicas`) %>% "
+"0","  plot(col = c(""red"", ""blue"", ""yellow""), "
+"0","       main = ""Relacion entre el tipo de parto y la cantidad de consultas medicas"","
+"0","       xlab = ""TIPO DE PARTO"","
+"0","       ylab = ""CANTIDAD DE CONSULTAS MEDICAS"")"

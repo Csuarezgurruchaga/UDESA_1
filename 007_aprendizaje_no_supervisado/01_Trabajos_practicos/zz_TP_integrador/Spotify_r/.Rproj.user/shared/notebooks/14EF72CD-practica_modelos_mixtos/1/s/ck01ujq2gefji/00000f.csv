@@ -1,0 +1,1 @@
+"0","plot(dexp(x = 1:100,rate = 1/20), col = ""blue"")"

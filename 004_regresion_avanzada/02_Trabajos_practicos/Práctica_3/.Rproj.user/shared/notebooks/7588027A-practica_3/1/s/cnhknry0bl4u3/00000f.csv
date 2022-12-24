@@ -1,0 +1,5 @@
+"0","#calculamos el leverage de cada observacion"
+"0","leverage_cerebro <- as.data.frame(hatvalues(modelo_cerebro_3))"
+"0",""
+"0","boxplot(leverage_cerebro)"
+"0",""

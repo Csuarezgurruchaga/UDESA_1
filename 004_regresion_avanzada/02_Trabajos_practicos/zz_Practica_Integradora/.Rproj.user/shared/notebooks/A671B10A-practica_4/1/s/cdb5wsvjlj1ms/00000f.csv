@@ -1,0 +1,3 @@
+"0","datos %>% "
+"0","  ungroup() %>% "
+"0","  group_by(datos$educ)"

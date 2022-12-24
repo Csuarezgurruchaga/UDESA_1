@@ -1,0 +1,5 @@
+"0","plot(y = studres(modelo_cerebro_2), x = modelo_cerebro_2$fitted.values,"
+"0","     main = ""RESIDUOS VS PREDICHOS (Box & Cox)"","
+"0","     xlab = ""FITTED VALUES"","
+"0","     ylab = ""RESIDUALS"","
+"0","     ylim = c(-3.2, 10.5))"

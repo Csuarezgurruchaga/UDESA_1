@@ -1,0 +1,59 @@
+---
+title: "tp_final"
+output: html_document
+date: "2022-11-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library("dplyr")
+```
+
+```{r}
+df <- read.csv("~/Desktop/UDESA/007_aprendizaje_no_supervisado/01_Trabajos_practicos/zz_TP_integrador/Spotify_r/dataset_spotify.csv")
+
+summary(df)
+```
+
+
+```{r}
+df_numeric = scale(select_if(df, is.numeric))
+
+summary(df_numeric)
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

@@ -1,0 +1,3 @@
+"0","datos$dia %>% "
+"0","  table() %>% "
+"0","  barplot(col = ""pink"")"

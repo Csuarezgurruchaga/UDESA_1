@@ -1,0 +1,5 @@
+"0",""
+"0",""
+"0",""
+"0","abline(v = mean(datos$`peso ganado madre`, na.rm = T), "
+"0","       col = ""red"", lwd = 3)"

@@ -1,0 +1,26 @@
+"0","plot(""Type"", ""conc"")
+"
+"2","Warning in xy.coords(x, y, xlabel, ylabel, log) :"
+"2","
+ "
+"2"," NAs introduced by coercion
+"
+"2","Warning in xy.coords(x, y, xlabel, ylabel, log) :"
+"2","
+ "
+"2"," NAs introduced by coercion
+"
+"2","Warning in min(x) :"
+"2"," no non-missing arguments to min; returning Inf
+"
+"2","Warning in max(x) :"
+"2"," no non-missing arguments to max; returning -Inf
+"
+"2","Warning in min(x) :"
+"2"," no non-missing arguments to min; returning Inf
+"
+"2","Warning in max(x) :"
+"2"," no non-missing arguments to max; returning -Inf
+"
+"2","Error in plot.window(...) : need finite 'xlim' values
+"

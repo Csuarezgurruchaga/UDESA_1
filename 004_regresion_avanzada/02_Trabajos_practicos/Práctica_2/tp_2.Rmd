@@ -1,0 +1,856 @@
+---
+title: "tp_2"
+output: html_document
+date: '2022-07-11'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+1)
+```{r}
+trees <- read.csv("~/Desktop/UDESA/004_regresion_avanzada/02_Trabajos_practicos/Práctica_2/trees.txt", sep="")
+# head(trees)
+```
+Girth: Diametro en pulgadas. Variable cuantitativa float. Variable explicativa
+Height: Altura en pies. Variable cuantitativa entera. Variable explicativa
+Volume: Volumen de madera en pies cubicos. Variable cuantitativa float. Target
+
+
+1 a)
+```{r}
+summary(trees)
+```
+
+```{r}
+pairs(trees)
+```
+
+Observamos una relacion lineal entre el volumen de madera obtenido y las variables regresoras. Pareciera haber una correlacion lineal mas grande con el diametro, pero ambas features parecen tener una buena correlacion.
+
+Observemos los grados de correlaciones lineales entre las features y el target.
+```{r}
+trees %>% cor(method = "spearman") 
+```
+
+```{r}
+hist(trees$Volume, main = "DISTRIBUCION VARIABLE TARGET",
+                   col = "brown",
+                   xlab = "VOLUMEN OBTENIDO DE MADERA")
+```
+
+Observamos que la mayoria de los arboles que componen el dataset, suelen generar entre 10 y 30 pies cubicos de madera.
+
+1 b)
+
+Suponiendo un arbol aproximadamente cilindrico, podriamos calcular su volumen con la formula: pi * h * r^2, y para linealizar esta formula, le aplicamos el ln a sus terminos, por lo tanto el modelo lineal quedaria definido
+
+ln(volume)[pies^3] = ln(pi * 0.083333333^2/4)  + 2ln(girth) + ln(height) + e, donde los coeficientes estimados serian B0 = ln(pi * 0.083333333^2/4); B1 = 2; B2 = 1
+
+1 c)
+Para poder comparar nuestro modelo teorico con el modelo lineal estimado por R, vamos a transformar las variables explicativas y el target.
+```{r}
+trees$Volume = log(trees$Volume)
+
+trees$Girth = log(trees$Girth)
+
+trees$Height = log(trees$Height)
+```
+
+
+```{r}
+modelo = lm(trees$Volume ~ trees$Girth + trees$Height)
+```
+
+1 d)
+```{r}
+summary(modelo)
+```
+Test Global:
+A partir del P-value del estadistico F, comprobamos que hay una relacion lineal que explica a partir de almenos una de las variables explicativas, la variacion del target.
+
+Test INDIVIDUAL:
+A partir del P-value del estadistico T, concluimos que los estimadores de los betas para las features Height y Girth, son estadisticamente significativos, ya que ambos rechazan la H0) con un nivel alfa 0.01
+
+Observamos tambien que nuestro modelo tiene un error estandar de sus predicciones de ~0.08139 log(pies cubicos de madera).
+
+1 e)
+
+Esperariamos que tomen valores cercanos a los de nuestro modelo teorico propuesto, esto es:
+
+B0 = ln(pi * 0.083333333^2/4) ~ -5.21
+B1 = 2
+B2 = 1
+
+MODELO LINEAL MULTIPLE:
+
+B0 = -6.63162        
+B1 = 1.98265       
+B2 = 1.11712 
+
+1 f)
+```{r}
+confint(modelo, level = 0.9)
+```
+El verdadero valor del parametro Beta de Girth estara contenido en el intervalo 1.8550470 y 2.1102528, con una probabilidad del 90%, y el verdadero valor del parametro Beta de Height esta contenido entre 0.7693491 y 1.4648975 con una probabilidad del 90%.
+
+1 g)
+```{r}
+library(car)
+linearHypothesis(model = modelo, 
+                 hypothesis.matrix = c(1, 0, 0), rhs = c(log(pi * 0.083333333^2/4)))
+```
+Con alfa 0.1, rechazo H0), por lo tanto el coeficiente beta estimado del intercept por el modelo lineal, no tiene el mismo impacto sobre el target que el intercept de nuestro modelo teorico propuesto.
+
+```{r}
+library(car)
+linearHypothesis(model = modelo, 
+                 hypothesis.matrix = c(0, 1, 0), rhs = c(2))
+```
+Con alfa 0.1, NO rechazo H0), por lo tanto el coeficiente beta estimado de la variable Girth por el modelo lineal, tiene el mismo impacto sobre el target que el beta 1 de nuestro modelo teorico propuesto.
+
+```{r}
+linearHypothesis(model = modelo, 
+                 hypothesis.matrix = c(0, 0, 1), rhs = c(1))
+```
+Con alfa 0.1, NO rechazo H0), por lo tanto el coeficiente beta estimado de la variable Height por el modelo lineal, tiene el mismo impacto sobre el target que el beta 2 de nuestro modelo teorico propuesto.
+
+
+1 h)
+
+RSS = RSE^2 * (n - p) = (0.08139)^2 * 28 = 0.1854
+
+R^2 = 1 - RSS/TSS -> TSS = RSS/(1 - R^2) = 0.1854/(1 - 0.9777) = 8.31
+
+Suma de los cuadrados explicada por la regresion:
+
+ESS = TSS - RSS = 8.31 - 0.1854 = 8.12 
+
+ESS, en este modelo tiene 2 grados de libertad
+
+Media de los cuadrados o cuadrados medios:
+
+```{r}
+mean(modelo$residuals^2)
+```
+
+
+
+
+1 i)
+```{r}
+print("La matriz de correlaciones de los coeficientes estimados de nuestro modelo queda: ")
+vcov(modelo)
+```
+```{r}
+print("Observamos que en la diagonal principal se encuentran los desvios de los coeficientes estimados del modelo.")
+sqrt(diag(vcov(modelo)))
+```
+
+
+1 j)
+Vamos a plantear el test de hipotesis con H0)  B1 = 2 * B2
+```{r}
+linearHypothesis(model = modelo, 
+                 hypothesis.matrix = c(0, 1, -2), 
+                 rhs = 0)
+```
+Con este p-value, no rechazamos H0, por lo tanto no podemos rechazar que el impacto producido en el target por la variable Height, es el doble que el generado por Girth.
+
+2)
+
+```{r}
+fuel <- read.csv("~/Desktop/UDESA/004_regresion_avanzada/02_Trabajos_practicos/Práctica_2/fuel.txt", sep="")
+
+# head(fuel)
+```
+
+2 a)
+```{r}
+summary(fuel)
+```
+Drivers: numero de licencias de conducir en el estado.
+FuelC: combustible vendido para el uso vehicular (en miles de galones).
+Income: ingreso anual personal por ano (correspondiente al ano 2000). 
+Miles: millas de autopista en el estado.
+MCP: millas conducidas estimadas per capita.
+Pop: poblacion mayor a 16 anos.
+Tax: impuestos estaduales a la gasolina, centavos por galon.
+
+
+```{r}
+pairs(fuel)
+```
+
+
+```{r}
+cor(fuel, method = "spearman")
+```
+
+
+```{r}
+hist(fuel$FuelC, col = "brown",
+                 main = "DISTRIBUCION VARIABLE TARGET",
+                 xlab = "GALONES DE COMBUSTIBLE VENDIDO")
+```
+
+2 b)
+```{r}
+modelo_fuel = lm(FuelC ~ Drivers + Income + Miles + MPC + Tax, data = fuel)
+
+summary(modelo_fuel)
+```
+El estadistico global F nos indica que almenos una feature tiene una relacion lineal con el target.
+Los estadisticos individuales T, nos indican que las features MPC y Tax, no logran rechazar la H0, con un nivel 0.05 (nivel que adoptamos).
+Observamos un Error estandar de prediccion del modelo de ~394.100 galones de combustible.
+
+2 c)
+```{r}
+modelo_fuel_no_drivers = lm(FuelC ~ Income + Miles + MPC + Tax, data = fuel)
+
+summary(modelo_fuel_no_drivers)
+```
+Observamos como al quitar la feature Drivers, nuestro coeficiente de significancia cae abruptamente, y con esto la relacion lineal que explica nuestro modelo a partir de las features para con el target. Esto se debe a que hemos dropeado la variable que mayor explicaba del modelo, quedando unicamente la feature Miles como estadisticamente significativa. 
+
+Es logico, pero se destaca como aumenta el error estandar de prediccion del modelo a ~1.648.000 galones de combustible.
+
+2 d)
+Proponemos 2 maneras de determinar si la regresion es significativa a nivel 5%
+
+```{r}
+linearHypothesis(modelo_fuel, hypothesis.matrix = c("Drivers = 0", 
+                                                    "Income = 0",
+                                                    "Miles = 0",
+                                                    "MPC = 0",
+                                                    "Tax = 0"))
+
+```
+A nivel 5%, se rechaza la hipotesis nula de que ninguna feature tiene relacion lineal con el target.
+
+```{r}
+summary(modelo_fuel)
+```
+La regresion resulta significativa al nivel 5% (Analisis Global del estadistico F).
+
+2 e)
+
+Las features que logran rechazar H0 son Income y Miles (Analisis individual estadistico T).
+
+2 f)
+
+```{r}
+cbind(modelo_fuel$coef[c(1:2, 4)], 
+      confint(modelo_fuel, level = 0.95, 
+              parm = c("(Intercept)","Drivers", "Miles")))
+```
+
+2 g)
+
+```{r}
+vcov(modelo_fuel)[2:3, 2:3]
+```
+
+2 h)
+
+Vamos a testear si las features Drivers e Income, tienen el mismo impacto sobre el target, esto es "tienen el mismo parametro beta estimado".
+```{r}
+# library(car)
+linearHypothesis(model = modelo_fuel, 
+                 hypothesis.matrix = c(0, 1, -1, 0, 0, 0), # B1,B2,B3,B4,B5,B6 Intercept, drivers, income, miles, mpc, tax
+                 rhs = 0)
+```
+Dado que observamos un p-value muy alto, no logramos rechazar H0, por lo tanto no podemos asegurar que el impacto generado por la variable Drivers e Income es el mismo sobre el target. Esto quiere decir que no nos agregan informacion extra, por lo tanto seria una buena decision eliminar una de ellas para entrenar el modelo.
+
+2 i)
+
+```{r}
+library(ellipse)
+plot(ellipse(modelo_fuel, which = c(2, 3), level = 0.95), 
+     col = "darkblue", main = "ELIPSOIDE DE CONFIANZA 95%")
+```
+Tiene una apariencia mas ovalada que circular, por lo que existe una correlacion entre los betas estimados de las features Income y Drivers.
+
+2 j)
+
+```{r}
+new_data = data.frame(Drivers = 2718209, Income = 27871, 
+                      Miles = 78914, MPC = 10458.4, 
+                      Tax = 20)
+
+#Intervalo de confianza:
+predict(modelo_fuel, newdata = new_data, 
+                     interval = c("confidence"), level = 0.90)
+
+```
+
+Si hubiesen 2.718.209 licencias de conducir en el estado, se tuviera un ingreso anual personal de 27.871, hubiesen 78.914 millas de autopista, 10.458 millas conducidas estimadas per capita y 20 impuestos estaduales a la gasolina, la venta *PROMEDIO* estimada de combustible en los estados que componen el distrito de Columbia estaria contenida en el intervalo 1.815.836 y 2.018.090 con una probabilidad del 90%.
+
+```{r}
+#Intervalo de prediccion:
+predict(modelo_fuel, newdata = new_data, 
+                     interval = c("predict"), level = 0.90)
+```
+Si hubiesen 2.718.209 licencias de conducir en el estado, se tuviera un ingreso anual personal de 27.871, hubiesen 78.914 millas de autopista, 10.458 millas conducidas estimadas per capita y 20 impuestos estaduales a la gasolina, la venta estimada de combustible en *ese* estado de Columbia estaria contenida en el intervalo 1.247.465 y 2.586.460 con una probabilidad del 90%.
+
+
+Observamos que el intervalo de prediccion siempre sera mayor que el intervalo de confianza.
+
+2 k)
+```{r}
+anova(modelo_fuel)
+```
+
+```{r}
+anova(modelo_fuel_no_drivers, modelo_fuel)
+```
+Al hacer un anova entre el modelo que tiene la feature Drivers y el que no, corroboramos que se rechaza la hipotesis nula (H0: Beta_Drivers = 0), con lo cual corroboramos que la feature Drivers mejora el calculo de los residuos RSS, y por ende, no conviene dropearla.
+
+
+3)
+
+3 a)
+```{r}
+water <- read.csv("~/Desktop/UDESA/004_regresion_avanzada/02_Trabajos_practicos/Práctica_2/water.txt", sep="")
+
+#Vamos a convertir la variables explicativas de pulgadas a metros y el target a metros cubicos
+
+water[, 2:7] = water[, 2:7] * 0.0254
+water[, 8] = water[, 8]*1233.4818375475
+# head(water)
+
+```
+Todas las variables y el target son cuantitativas.
+```{r}
+summary(water)
+```
+
+```{r}
+pairs(water)
+```
+
+```{r}
+cor(water, method = "spearman")
+```
+Observamos que parece haber una alta correlacion entre la variable target "BSAAM" y las features "OPBPC", "OPRC", "OPSLAKE"  
+
+```{r}
+hist(water$BSAAM, col = "brown",
+                 main = "DISTRIBUCION VARIABLE TARGET",
+                 xlab = "VOLUMEN DE ESCORRENTIA")
+```
+
+3 b)
+```{r}
+modelo_water = lm(BSAAM ~ OPBPC + OPRC + OPSLAKE, data = water)
+
+(summary_water = summary(modelo_water))
+```
+El estadistico Global "F" indica que almenos una de las variables explicativas tiene una correlacion lineal con el target.
+
+El estadistico individual "T" de la feature OPBPC, nos indica que el coeficiente beta estimado para este parametro, no es estadisticamente significativo, ya que no logra rechazar la H0 (Beta_OPBPC = 0), y por tanto puede deberse al azar de la muestra.
+
+3 c)
+
+```{r}
+features_water = water %>% 
+                 select(c("OPBPC", "OPRC", "OPSLAKE"))
+```
+
+
+```{r}
+pairs(features_water)
+```
+
+Parece haber una gran correlacion lineal entre las features explicativas que utilizamos para predecir el target. Esto nos afecta para realizar INFERENCIA, ya que viola el supuesto de que las variables explicativas son independientes entre si.
+
+```{r}
+cor(features_water, method = "spearman")
+```
+
+
+```{r}
+summary_water
+```
+Al realizar los test "T" individuales, se plantea en la H0 que no existe relacion lineal entre el target (en nuestro caso BSAAM) y la variable que se esta evaluando (Bi = 0). Si se logra obtener un estadistico Tobs con la muestra, tan extremo que logre rechazar la H0, podemos confirmar que si hay una relacion lineal entre el target y esa feature, y por tanto el parametro que nos arroja el modelo lineal, se lo considera "estadisticamente significativo", lo que quiere decir que podemos asegurar con un nivel "alfa" de probabilidad que no es producto de azar del muestreo. En este caso, el beta estimado correspondiente a la variable OPBPC, no rechaza H0, por lo que no podemos asegurar que no es producto del azar, y que realmente existe relacion lineal entre el target y esta variable.
+
+3 d)
+```{r}
+summary_water
+```
+Al realizar el test global F, estamos testeando si alguna feature tiene correlacion lineal con el target (esto es, si algun beta es != 0), para esto, se toma como H0 que todos los betas son 0, y si logramos rechazar esta H0, probaremos con nivel alfa, que alguna variable guarda una relacion lineal con nuestra variable dependiente. Para nuestro caso observamos que la H0 es rechaza y por tanto algun beta es estadisticamente significativo y distinto de 0.
+
+3 e)
+
+```{r}
+summary_water$coefficients[2:3,]
+```
+A partir del test T, observamos que la feature OPRC logra rechazar H0, con un p-value 0.0063, mientras que por el contrario la feature OPBPC, no consigue rechazar la H0, con un p-value 0.935, con lo cual no podemos asegurar que la estimacion del parametro Beta para la variable OPBPC sea distinta de 0.
+
+3 f)
+
+```{r}
+modelo_water_sin_restricciones = lm(BSAAM ~ ., data = water)
+```
+
+Vamos a testear a partir de un anova cual modelo tiene menor suma cuadrada de residuos.
+
+```{r}
+anova(modelo_water, modelo_water_sin_restricciones)
+```
+Con un nivel alfa del 5%, logro rechazar la H0, de que las features (Year, APMAM, APSAB, APSLAKE), no tienen informacion que logren ayudar a explicar mejor de manera lineal la variable target. Por lo tanto concluimos que agregar estas features, mejora el modelo, y elegimos quedarnos con el modelo sin restricciones para realizar regresion. Vale la pena recordar que no podemos hacer inferencia con este modelo debido a la gran relacion lineal entre sus variables explicativas.
+
+Intervalos de confianza de los parametros con nivel de confianza 95%
+```{r}
+cbind(modelo_water_sin_restricciones$coefficients, 
+      confint(modelo_water_sin_restricciones, level = 0.95))
+```
+
+
+```{r}
+new_data_water = data.frame(Year = mean(water$Year), 
+                            APMAM = mean(water$APMAM), 
+                            APSAB = mean(water$APSAB), 
+                            APSLAKE = mean(water$APSLAKE), 
+                            OPBPC = mean(water$OPBPC), 
+                            OPRC = mean(water$OPRC), 
+                            OPSLAKE = mean(water$OPSLAKE))
+
+predict(modelo_water_sin_restricciones, newdata = new_data_water, 
+        interval = c("confidence"), level = 0.95)
+```
+
+Tomando los valores medios de las variables regresoras, la cantidad promedio en metros cubicos de escorrentia sera de entre 75433.16 y 80078.93, con una probabilidad del 95%.
+
+```{r}
+predict(modelo_water_sin_restricciones, newdata = new_data_water, 
+        interval = c("predict"), level = 0.95)
+```
+
+Tomando los valores medios de las variables regresoras, la cantidad de metros cubicos de escorrentia sera de entre 62347.76 y 93164.34, con una probabilidad del 95%.
+
+
+
+
+4 a)
+
+```{r}
+esperanza2015 <- read.csv("~/Desktop/UDESA/004_regresion_avanzada/02_Trabajos_practicos/Práctica_2/esperanza2015.txt", sep="")
+```
+life: esperanza de vida al nacer (en anos).
+child: tasa de mortalidad de 0 a 5 anos, por cada mil ninos nacidos vivos en el ano.
+income: producto bruto interno per capita (en USD).
+dtp3: porcentaje de niños de un año inmunizados con tres dosis de vacuna contra la difteria, tetanos y pertussi (triple bacteriana) (DTP3) medida en 2010.
+school: años de escolaridad promedio en hombres de 25-34 años. estándar
+status: grado de desarrollo del pais (developed - not developed)
+
+```{r}
+esperanza2015 = esperanza2015[, 1:9] #dropeamos la feature status
+```
+
+
+```{r}
+summary(esperanza2015)
+```
+Observamos valores nulos (NA's) en algunas features.
+
+Variable categorica : country
+Variables cuantitativas: income.2015, child.2015, life.2015, gini.2015, energy.2015, dtp3.2010, school.2015, hdi.2015 
+
+```{r}
+pairs(esperanza2015[, 2:8])
+
+```
+
+
+```{r}
+hist(esperanza2015$life.2015, col = "brown",
+                    main = "DISTRIBUCION VARIABLE TARGET",
+                    xlab = "ESPERANZA DE VIDA AL NACER")
+```
+
+4 b)
+
+```{r}
+modelo_life_1 = lm(life.2015 ~ child.2015, data = esperanza2015)
+(summary_life_1 = summary(modelo_life_1))
+```
+
+
+```{r}
+modelo_life_2 = lm(life.2015 ~ child.2015 + I(child.2015^2), data = esperanza2015)
+(summary_life_2 = summary(modelo_life_2))
+```
+Observando el R^2 ajustado y el RSE, concluimos que el modelo modelo_life_2 (LIFE = B0 + B1 * Child + B2 * Child^2 + e) explica mejor la variacion lineal del target.
+
+```{r}
+plot(esperanza2015$life.2015 ~ esperanza2015$child.2015, 
+     col = "blue", main = "LIFE ~ CHILD", cex = 0.8,
+     xlab = "Tasa de mortalidad", ylab = "Esperanza de vida")
+
+lines(y = summary_life_1$coefficients[1] + summary_life_1$coefficients[2] * esperanza2015$child.2015, 
+      x = esperanza2015$child.2015, col = "red", lwd = 3)
+
+points(y = summary_life_2$coefficients[1] + summary_life_2$coefficients[2] * 
+        esperanza2015$child.2015 + summary_life_2$coefficients[3] * 
+        (esperanza2015$child.2015^2), x = esperanza2015$child.2015, 
+        col = "green", xlab = "Tasa de mortalidad ^ 2", 
+        ylab = "Esperanza de vida", lwd = 2)
+
+
+legend("topright", 
+       c("LIFE = B0 + B1 * Child + e", 
+         "LIFE = B0 + B1 * Child + B2 * Child^2 + e"),
+       fill = c("red", "green"), cex = 0.8)
+
+```
+
+4 c)
+```{r}
+plot(esperanza2015$life.2015 ~ esperanza2015$dtp3.2010, main = "Target ~ dtp3.2010")
+```
+No se observa una correlacion lineal definida entre el target y la variable dtp3.2010.
+
+```{r}
+modelo_life_3 = lm(life.2015 ~ dtp3.2010, data = esperanza2015)
+(summary_life_3 = summary(modelo_life_3))
+```
+Si bien el modelo llega a rechazar H0, y por tanto encuentra una relacion lineal entre dtp3.2010 y el target, la misma no es muy alta. La variacion lineal del target se explica en un 30% por la feature dtp3.2010, con un error de prediccion +/- 6.317 años.
+
+
+```{r}
+plot(esperanza2015$life.2015 ~ esperanza2015$dtp3.2010, main = "Target ~ dtp3.2010")
+
+lines(y = summary_life_3$coefficients[1] + summary_life_3$coefficients[2] * esperanza2015$dtp3.2010, 
+      x = esperanza2015$dtp3.2010, col = "red", lwd = 3)
+```
+
+4 d)
+```{r}
+modelo_life_4 = lm(life.2015 ~ dtp3.2010 + child.2015, data = esperanza2015)
+(summary_life_4 = summary(modelo_life_4))
+```
+Observamos que la feature dtp3.2010, no proporciona informacion relevante para explicar la varianza del target, es por esto que este modelo (LIFE = B0 + B1 * dtp3 + B2 * Child + e), presenta practicamente el mismo nivel de significancia que el primer modelo (LIFE = B0 + B1 * Child + e). Esto lo podemos observar tambien en los test "T" individuales, donde vemos que el beta estimado de esta feature, no logra rechazar H0, y por tanto no podemos asegurar que haya una relacion lineal del mismo con el target.
+
+4 e)
+Para realizar el analisis de los modelos, vamos crearnos un nuevo dataset, que no contenga las observaciones con NA's, para esto, no vamos a tomar en cuenta las features gini.2015 ni energy.2015, por la gran cantidad de registros vacios que poseen.
+
+```{r}
+esperanza2=na.omit(esperanza2015[ ,c(2:4, 7:9)])
+```
+Ahora vamos a reentrenar los modelos con el nuevo dataset que no contiene registros vacios.
+
+```{r}
+
+modelo_life_1 = lm(life.2015 ~ child.2015, data = esperanza2)
+modelo_life_2 = lm(life.2015 ~ child.2015 + I(child.2015^2), data = esperanza2)
+modelo_life_3 = lm(life.2015 ~ dtp3.2010, data = esperanza2)
+modelo_life_4 = lm(life.2015 ~ dtp3.2010 + child.2015, data = esperanza2)
+
+modelo_life_full = lm(life.2015 ~ income.2015 + child.2015 + dtp3.2010 + 
+                                  school.2015 + hdi.2015, data = esperanza2)
+# summary(modelo_life_full)
+
+modelo_life_5 = lm(life.2015 ~ child.2015 + school.2015 + hdi.2015, 
+                   data = esperanza2)
+# summary(modelo_life_5)
+```
+
+
+```{r}
+anova(modelo_life_1, modelo_life_2, modelo_life_3, modelo_life_4, modelo_life_5, modelo_life_full)
+```
+Observamos que los modelos con menor suma de residuos son el 5 y el 6
+
+```{r}
+anova(modelo_life_5, modelo_life_full)
+```
+No podemos rechazar la H0, por lo tanto concluimos que quitar las variables income.2015 y dtp3.2010, no empeoran el modelo. Por lo tanto, optamos por quedarnos con el modelo " Model 1: life.2015 ~ child.2015 + school.2015 + hdi.2015 ".
+
+4 f)
+
+```{r}
+data_life = data.frame("child.2015" = c(1:183))
+
+#Intervalo de confianza:
+int_confianza = predict(modelo_life_2, newdata = data_life, 
+                      interval = c("confidence"), level = 0.95)
+
+#Intervalo de prediccion:
+prediccion = predict(modelo_life_2, newdata = data_life, 
+                       interval = c("predict"), level = 0.95)
+```
+
+
+```{r}
+plot(esperanza2$life.2015 ~ esperanza2$child.2015, pch = 16,
+     main = "INTERVALOS DE CONFIANZA Y PREDICCION MODELO 2",
+     col = "brown", lwd = 2, xlab = "CHILD", ylab = "ESPERANZA DE VIDA")
+
+
+points(x = data_life$child.2015, y = int_confianza[, 2], col = "darkblue")
+points(x = data_life$child.2015, y = int_confianza[, 3], col = "darkblue")
+
+
+points(x = data_life$child.2015, y = prediccion[, 2], col = "darkgreen")
+points(x = data_life$child.2015, y = prediccion[, 3], col = "darkgreen")
+
+lines(y = summary_life_2$coefficients[1] + summary_life_2$coefficients[2] * data_life$child.2015 + summary_life_2$coefficients[3] * data_life$child.2015^2,
+      x = data_life$child.2015, col = "violet", lwd = 2)
+
+legend("topright", 
+       c("INTERVALO DE CONFIANZA 95%", "INTERVALO DE PREDICCION 95%"), 
+       fill = c("darkblue", "darkgreen"), cex = 0.8)
+```
+
+5)
+
+
+```{r}
+AlturaGalton <- read.csv("~/Desktop/UDESA/004_regresion_avanzada/02_Trabajos_practicos/Práctica_2/AlturaGalton.txt", sep="")
+```
+father: altura del padre.
+mother: altura del madre.
+midparentHeight: altura promedio de la madre y el padre, calculada como (father + 1.08*mother)/2.
+gender: sexo del hijo.
+childHeight: altura del hijo.
+ 
+```{r}
+AlturaGalton_h = AlturaGalton[AlturaGalton$gender == "male", c(1:3, 5)]
+
+AlturaGalton_m = AlturaGalton[AlturaGalton$gender == "female", c(1:3, 5)]
+```
+
+```{r}
+summary(AlturaGalton_h)
+```
+
+```{r}
+pairs(AlturaGalton_h, main = "ALTURA GALTON HOMBRES")
+```
+
+```{r}
+summary(AlturaGalton_m)
+```
+```{r}
+pairs(AlturaGalton_m, main = "ALTURA GALTON MUJERES")
+```
+
+Para ambos generos, no se observan registros incompletos.
+Variables cuantitativas : father, mother, midparentHeight, childHeight
+Variables cualitativas : gender
+
+```{r}
+cor(AlturaGalton_h, method = "spearman")
+```
+
+
+```{r}
+cor(AlturaGalton_m, method = "spearman")
+```
+
+La variable que parece tener mayor correlacion lineal con la altura del hijo/a es midparentHeight.
+
+```{r}
+par(mfrow = c(1, 2), oma = c(0, 0, 2, 0))
+
+
+
+hist(AlturaGalton_h$childHeight, col = "brown",
+                    xlab = "ALTURA DEL HIJO", main = "")
+
+hist(AlturaGalton_m$childHeight, col = "brown", main = "",
+                    xlab = "ALTURA DE LA HIJA")
+
+mtext("DISTRIBUCION VARIABLES TARGET", line =0, side = 3, outer = T, cex = 2)
+```
+
+5 b)
+```{r}
+modelo_altura_h = lm(childHeight~., data = AlturaGalton_h)
+
+(summary_altura_h = summary(modelo_altura_h))
+```
+
+```{r}
+modelo_altura_h = lm(childHeight~., data = AlturaGalton_h)
+
+(summary_altura_h = summary(modelo_altura_h))
+```
+
+Observamos en ambos modelos, que nuestro beta estimado para la variable midparentHeight, arroja NA's value. Esto ocurre debido a que esa feature es una combinacion lineal entre las features father y mother, con lo cual tiene una muy alta dependencia con las features mencionadas, y por tanto no se cumple el supuesto de independencia de los errores que necesita el modelo para poder construir sus estimadores. 
+
+```{r}
+modelo_sin_mother_h = lm(childHeight ~ father + midparentHeight, data = AlturaGalton_h)
+summary(modelo_sin_mother_h)
+```
+Al quitar la feature mother, observamos que nuestra funcion logra estimar todos los parametros beta, pero nuestra feature father, en este caso no resulta estadisticamente significativa, ya que no logra rechazar H0.
+
+```{r}
+linearHypothesis(model = modelo_sin_mother_h,
+                 hypothesis.matrix = c(0, 1, 0), 
+                 rhs = 0)
+```
+Comprobamos de otra forma que la variable father, no es significativa, ya que no logra rechazar H0: B_father = 0.
+
+
+```{r}
+modelo_sin_mother_m = lm(childHeight ~ father + midparentHeight, data = AlturaGalton_m)
+summary(modelo_sin_mother_m)
+```
+Al quitar la feature mother, observamos que nuestra funcion logra estimar todos los parametros beta, pero nuestra feature father, en este caso no resulta estadisticamente significativa, ya que no logra rechazar H0.
+
+```{r}
+linearHypothesis(model = modelo_sin_mother_m,
+                 hypothesis.matrix = c(0, 1, 0), 
+                 rhs = 0)
+```
+
+5 c)
+
+```{r}
+anova(lm(childHeight ~ midparentHeight, data = AlturaGalton_h) , modelo_sin_mother_h)
+```
+
+```{r}
+anova(lm(childHeight ~ midparentHeight, data = AlturaGalton_m) , modelo_sin_mother_m)
+```
+
+```{r}
+anova(lm(childHeight ~ midparentHeight, data = AlturaGalton_h) , 
+      lm(childHeight ~ midparentHeight + mother, data = AlturaGalton_h))
+```
+```{r}
+anova(lm(childHeight ~ midparentHeight, data = AlturaGalton_m) , 
+      lm(childHeight ~ midparentHeight + mother, data = AlturaGalton_m))
+```
+
+Con un anova para estudiar la descomposicion de la varianza, comprobamos que tanto la feature father, como la feature mother, no mejoran la varianza de nuestros residuos, por lo que es mejor el modelo sin ellas, y quedarnos solo con midparentHeight.
+
+
+5 d)
+
+```{r}
+best_orphan_model_h = lm(childHeight ~ midparentHeight, data = AlturaGalton_h)
+best_orphan_model_m = lm(childHeight ~ midparentHeight, data = AlturaGalton_m)
+```
+
+```{r}
+
+# data_midparentHeight = data.frame("midparentHeight" = seq(55,80,0.25))
+data_midparentHeight = data.frame("midparentHeight" = AlturaGalton$midparentHeight)
+
+#Intervalo de confianza:
+int_confianza_height_h = predict(best_orphan_model_h, 
+                                 newdata = data_midparentHeight, 
+                                 interval = c("confidence"), level = 0.95)
+
+#Intervalo de prediccion:
+prediccion_height_h = predict(best_orphan_model_h, 
+                              newdata = data_midparentHeight, 
+                              interval = c("predict"), level = 0.95)
+
+
+#Intervalo de confianza:
+int_confianza_height_m = predict(best_orphan_model_m,
+                                 newdata = data_midparentHeight,
+                                 interval = c("confidence"), level = 0.95)
+
+#Intervalo de prediccion:
+prediccion_height_m = predict(best_orphan_model_m,
+                              newdata = data_midparentHeight,
+                              interval = c("predict"), level = 0.95)
+```
+
+
+```{r}
+plot(AlturaGalton$childHeight ~ AlturaGalton$midparentHeight,
+     main = "CHILDHEIGHT EXPLICADO POR MIDPARENTSHEIGHT", 
+     ylim = c(55, 80),
+     xlab = "MIDPARENTHEIGHT",
+     ylab = "CHILD HEIGHT",
+     cex = 0.2)
+
+# hombres
+points(AlturaGalton_h$childHeight ~ AlturaGalton_h$midparentHeight,
+       col = "darkblue", lwd = 2, cex = 0.2)
+
+lines(x = AlturaGalton_h$midparentHeight, y = best_orphan_model_h$coeff[1] + 
+      best_orphan_model_h$coeff[2] * AlturaGalton_h$midparentHeight,
+      col = "blue", lwd = 3)
+
+# Intervalos de confianza 
+points(x = data_midparentHeight$midparentHeight, pch = 16,
+       y = int_confianza_height_h[, 2], col = "purple", cex = 0.4)
+
+points(x = data_midparentHeight$midparentHeight, pch = 16,
+       y = int_confianza_height_h[, 3], col = "purple", cex = 0.4)
+
+# Intervalos de prediccion
+lines(x = data_midparentHeight$midparentHeight, 
+      y = prediccion_height_h[, 2], col = "lightblue", lwd =3)
+
+lines(x = data_midparentHeight$midparentHeight, 
+      y = prediccion_height_h[, 3], col = "lightblue", lwd =3)
+
+
+
+# mujeres
+points(AlturaGalton_m$childHeight ~ AlturaGalton_m$midparentHeight,
+       col = "pink", lwd = 2, cex = 0.2)
+
+lines(x = AlturaGalton_m$midparentHeight, y = best_orphan_model_m$coeff[1] + 
+        best_orphan_model_m$coeff[2] * AlturaGalton_m$midparentHeight,
+      col = "red", lwd = 3)
+
+# Intervalos de confianza 
+points(x = data_midparentHeight$midparentHeight, pch = 16,
+       y = int_confianza_height_m[, 2], col = "orange", cex = 0.4)
+
+points(x = data_midparentHeight$midparentHeight, pch = 16,
+       y = int_confianza_height_m[, 3], col = "orange", cex = 0.4)
+
+# Intervalos de prediccion
+lines(x = data_midparentHeight$midparentHeight, 
+      y = prediccion_height_m[, 2], col = "gold", lwd = 3)
+
+lines(x = data_midparentHeight$midparentHeight, 
+      y = prediccion_height_m[, 3], col = "gold", lwd = 3)
+
+legend("bottomright", 
+       c("modelo male", "modelo female"), 
+       fill = c("blue", "red"), cex = 0.9)
+
+```
+Se muestra en el grafico en color azul los individuos masculinos, y en color rosa los femeninos. A su vez, se muestra tambien los modelos lineales planteados (color azul para masculinos, rojo para femeninos), junto con sus respectivos intervalos de confianza e intervalos de prediccion, ambos con un nivel de confianza del 95%.
+
+Nota: 
+intervalo deprediccion *masculino* color celeste
+intervalo de confianza *masculino* color violeta
+
+intervalo de prediccion *femenino* color amarillo
+intervalo de confianza *femenino* color naranja
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+```{r}
+```
+

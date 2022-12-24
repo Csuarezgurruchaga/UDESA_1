@@ -1,0 +1,3 @@
+"0","(tabla3 = aggregate(datos$apgar, "
+"0","                    by = list(datos$gestacion), "
+"0","                    mean, na.rm=T))"

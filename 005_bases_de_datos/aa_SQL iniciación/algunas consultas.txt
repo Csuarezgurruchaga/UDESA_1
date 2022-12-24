@@ -1,0 +1,44 @@
+https://livesql.oracle.com/ --web de Oracle
+
+Select * from user_tables --catálogo de tablas
+
+Select * from user_views --catálogo de vistas
+
+select table_name, tablespace_name, status
+from user_tables
+where table_Name = 'EMPLOYEE';
+
+select table_name, column_name , data_type
+from user_tab_columns --catálogo de columnas
+where table_Name = 'EMPLOYEE'
+;
+
+select * from employee
+where rownum< 3 --limitar la cantidad de registros devueltos en la consulta
+
+select 
+    e.last_name
+    ,e.first_name
+    ,d.department_name
+    ,j.description
+    ,e2.last_name
+from employee e
+inner join department d
+    on e.department_number = d.department_number
+inner join job j
+    on e.job_code = j.job_code
+inner join employee e2
+    on e.manager_employee_number = e2.employee_number
+
+
+CREATE TABLE salestbl -- creación de la tabla salestbl
+        (storeid  int,
+         prodid   char(1),
+         sales	  dec(9,2));
+
+
+INSERT INTO contact     VALUES --insertar datos en la tabla contact
+    (8010,'Brayman, Connie',408,1112345,112,sysdate - 92);
+
+
+

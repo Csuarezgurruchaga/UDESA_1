@@ -1,0 +1,3 @@
+"0","par(mfrow=c(1, 2))"
+"0",""
+"0","boxplot(SegVial$Poblacion, main = ""Poblacion"", col = ""blue"")"

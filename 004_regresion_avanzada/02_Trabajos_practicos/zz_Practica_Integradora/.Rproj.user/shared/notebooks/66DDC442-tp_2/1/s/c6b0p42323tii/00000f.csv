@@ -1,0 +1,3 @@
+"0","hist(water$BSAAM, col = ""brown"","
+"0","                 main = ""DISTRIBUCION VARIABLE TARGET"","
+"0","                 xlab = ""VOLUMEN DE ESCORRENTIA"")"

@@ -1,0 +1,3 @@
+"0","fuel <- read.csv(""~/Desktop/UDESA/004_regresion_avanzada/02_Trabajos_practicos/Práctica_2/fuel.txt"", sep="""")"
+"0",""
+"0","# head(fuel)"

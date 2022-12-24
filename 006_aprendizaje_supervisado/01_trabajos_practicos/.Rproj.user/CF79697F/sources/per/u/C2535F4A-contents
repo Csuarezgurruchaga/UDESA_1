@@ -1,0 +1,60 @@
+---
+title: "trabajo_practico"
+output: html_document
+date: "2022-09-26"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library()
+```
+
+1)
+
+```{r}
+rnorm(n = 100, mean = mu1, sd = cov)
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

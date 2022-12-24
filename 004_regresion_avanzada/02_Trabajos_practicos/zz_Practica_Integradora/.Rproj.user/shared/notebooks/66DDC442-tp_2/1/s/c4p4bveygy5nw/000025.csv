@@ -1,0 +1,7 @@
+"0",""
+"0",""
+"0","legend(""topright"", "
+"0","       c(""LIFE = B0 + B1 * Child + e"", "
+"0","         ""LIFE = B0 + B1 * Child + B2 * Child^2 + e""),"
+"0","       fill = c(""red"", ""green""), cex = 0.8)"
+"0",""

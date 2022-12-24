@@ -1,0 +1,8 @@
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0",""
+"0","library(FactoMineR)"
+"0","library(factoextra)"
+"0","library(fpc)"
+"0","library(mclust)"
+"0","library(NbClust)"
+"0","library(cluster)"

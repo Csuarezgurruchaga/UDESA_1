@@ -1,0 +1,281 @@
+---
+title: "TPFinal"
+output: html_document
+date: "2022-08-14"
+---
+
+### Ejercicio 1
+
+```{r}
+library("readxl")
+SegVial = read_excel("/Users/hernantelechea/Downloads/Trabajo Final-20220814/SegVial.xlsx")
+```
+
+```{r}
+dim(SegVial)
+summary(SegVial)
+```
+Tenemos 20 variables analizadas con 24 datos cada una. 11 de esas variables aparecen como categóricas, el resto como cuantitativas. Sin embargo, al observar la tabla de datos, solo 3 deberían ser categóricas. Las demás aparecen como tal por tener decimales. Las voy a transformar.
+
+```{r}
+SegVial2 = cbind(SegVial,as.numeric(SegVial$ArCiclista),as.numeric(SegVial$ArBajaVel),as.numeric(SegVial$PMPeatones),as.numeric(SegVial$PMCiclistas),as.numeric(SegVial$PMTPublico),as.numeric(SegVial$PMVMotor),as.numeric(SegVial$Precipitacion),as.numeric(SegVial$Temp))
+SegVial2 = SegVial2[,-c(6:11,18,19)]
+colnames(SegVial2) = c("Codigo Pais","Pais","Ciudad","Poblacion","DenPob","PeatAuto","CicAuto","V2RMSM","V2RMAuto","AutoSM","AutoAuto","PBI","ArCiclista","ArBajaVel","PMPeatones","PMCiclistas","PMTPublico","PMVMotor","Precipitacion","Temp")
+summary(SegVial2)
+```
+
+Tengo las variables formateadas, así que puedo mirar la matriz de covarianzas y el scatter plot:
+```{r}
+plot(SegVial2)
+cor(SegVial2[,-c(1:3)])
+```
+
+Arrancamos por responder algunas preguntas típicas de los accidentes viales:
+```{r}
+par(mfrow = c(2,3))
+plot(SegVial2$DenPob,SegVial2$AutoAuto)
+plot(SegVial2$DenPob,SegVial2$AutoSM)
+plot(SegVial2$DenPob,SegVial2$V2RMAuto)
+plot(SegVial2$DenPob,SegVial2$V2RMSM)
+plot(SegVial2$DenPob,SegVial2$PeatAuto)
+plot(SegVial2$DenPob,SegVial2$CicAuto)
+```
+Por sentido común, esperaría que poblaciones con mayor densidad sean propensas a más accidentes, de cualquier tipo, ya que la concentración de gente en zonas más pequeñas debe impactar en el ordenamiento del tránsito. Sin embargo, los plots no me indican esto, por lo que DenPob no pareciera ser una variable muy indicadora del nivel de accidentes. Quizás, la muestra tiene algún tipo de sesgo (son ciudades muy seguras y/o con densidades muy pequeñas).
+```{r}
+par(mfrow = c(2,3))
+plot(SegVial2$Poblacion,SegVial2$AutoAuto)
+plot(SegVial2$Poblacion,SegVial2$AutoSM)
+plot(SegVial2$Poblacion,SegVial2$V2RMAuto)
+plot(SegVial2$Poblacion,SegVial2$V2RMSM)
+plot(SegVial2$Poblacion,SegVial2$PeatAuto)
+plot(SegVial2$Poblacion,SegVial2$CicAuto)
+```
+Salvo en los accidentes de ciclistas a autos/taxis, la población tiene relación aproximadamente lineal respecto a los distintos tipos de accidentes. No sabemos si las variables de accidente son realmente índices o totales de accidentes. Si fueran lo segunda, tiene sentido el efecto - donde hay más gente, podés reportar más casos-. Sin embargo, como vimos en los gráficos previos, que esa gente esté más o menos distante impacta poco.
+
+De acuerdo a la matriz de covarianzas, no identifico alguna otra variable que tenga mucha relación con las variables de respuesta. Sí identifico relaciones entre variables regresoras que seguramente serán analizadas más adelante; la más destacada entre "PMVMotor" y "PMPeatones".
+
+Entre las variables de respuesta, hay mayor relación lineal pero quizás sea por efecto de que las demás variables impactan de manera similar en cualquier tipo de accidente.
+
+
+### Ejercicio 2
+
+```{r}
+SegVial2$PeatAuto.std = (SegVial2$PeatAuto / SegVial2$Poblacion) * (10 ^ 6)
+SegVial2$CicAuto.std = (SegVial2$CicAuto / SegVial2$Poblacion) * (10 ^ 6)
+SegVial2$V2RMSM.std = (SegVial2$V2RMSM / SegVial2$Poblacion) * (10 ^ 6)
+SegVial2$V2RMAuto.std = (SegVial2$V2RMAuto / SegVial2$Poblacion) * (10 ^ 6)
+SegVial2$AutoSM.std = (SegVial2$AutoSM / SegVial2$Poblacion) * (10 ^ 6)
+SegVial2$AutoAuto.std = (SegVial2$AutoAuto / SegVial2$Poblacion) * (10 ^ 6)
+SegVial2
+```
+
+
+### Ejercicio 3
+
+```{r}
+colnames(SegVial2)
+SegVial3 = data.frame(rep(0,24*20),nrow = 24,ncol = 20)
+column_position = c(4,5,12:20)
+contador = 4
+for (i in column_position) {
+  SegVial3[,contador] = (SegVial2[,i] - mean(SegVial2[,i])) / sd(SegVial2[,i])
+  contador = contador + 1
+}
+column_position_2 = c(1:3)
+for (i in column_position_2) {
+  SegVial3[,i] = SegVial2[,i]
+}
+column_position_3 = c(15:20)
+for (i in column_position_3) {
+  SegVial3[,i] = SegVial2[,i + 6]
+}
+colnames(SegVial3) = c("Codigo Pais","Pais","Ciudad","Poblacion.std","DenPob.std","PBI.std","ArCiclista.std","ArBajaVel.std","PMPeatones.std","PMCiclistas.std","PMTPublico.std","PMVMotor.std","Precipitacion.std","Temp.std","PeatAuto.std","CicAuto.std","V2RMSM.std","V2RMAuto.std","AutoSM.std","AutoAuto.std")
+SegVial3
+```
+
+
+### Ejercicio 4
+
+La única de las variables que lógicamente se relacionan aproximadamente de forma lineal es "Poblacion". Por esa razón, vamos a utilizar distintos métodos para seleccionar el mejor modelo de ajuste para esta problemática. Vamos a armar un modelo para cada variable de respuesta pero con todas las regresoras en cada uno, salvo "Codigo Pais", "Pais" y "Ciudad" porque no me van a aportar explicación de qué genera mayores accidentes:
+
+```{r}
+attach(SegVial3)
+PeatAuto.lm = lm(SegVial3$PeatAuto.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+CicAuto.lm = lm(SegVial3$CicAuto.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+V2RMSM.lm = lm(SegVial3$V2RMSM.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+V2RMAuto.lm = lm(SegVial3$V2RMAuto.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+AutoSM.lm = lm(SegVial3$AutoSM.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+AutoAuto.lm = lm(SegVial3$AutoAuto.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+```
+
+Arrancamos con el método de selección de variables, el stepwise, y lo medimos con el criterio de Akaike:
+```{r}
+PeatAuto.lm.step = step(PeatAuto.lm,direction = c("both"),trace = F)
+CicAuto.lm.step = step(CicAuto.lm,direction = c("both"),trace = F)
+V2RMSM.lm.step = step(V2RMSM.lm,direction = c("both"),trace = F)
+V2RMAuto.lm.step = step(V2RMAuto.lm,direction = c("both"),trace = F)
+AutoSM.lm.step = step(AutoSM.lm,direction = c("both"),trace = F)
+AutoAuto.lm.step = step(AutoAuto.lm,direction = c("both"),trace = F)
+```
+
+```{r}
+summary(PeatAuto.lm)
+summary(PeatAuto.lm.step)
+```
+Ambos test son significativos a nivel múltiple por sus p-valores muy chicos, y tienen valores muy similares de RSE y R2 ajustado. Sin embargo, el modelo stepwise descarta las 3 variables que para el modelo estandarizado de ajuste eran no significativas (DenPob, Precipitacion y PBI). Por lo tanto, me quedo con el modelo stepwise porque, a menor cantidad de variables, mayor interpretabilidad.
+
+```{r}
+summary(CicAuto.lm)
+summary(CicAuto.lm.step)
+```
+Al igual que la comparación anterior, el modelo stepwise es mejor que el original y elimina 2 variables (DenPob y PBI) que no eran significativas. El R2 ajustado y el RSE son prácticamente iguales.
+Todas las variables regresoras del modelo stepwise son significativos a nivel individual.
+
+```{r}
+summary(V2RMSM.lm)
+summary(V2RMSM.lm.step)
+```
+Nuevamente, el modelo stepwise simplifica la interpretación más que el ajuste, dado que el R2 ajustado y el RSE son similares. A diferencia de las últimas 2 comparaciones, esta vez el setpwise considera que "ArCiclista" no contribuye al modelo. Tiene sentido olvidarnos de esa variable, dado que el área de tránsito para ciclistas no necesariamente impacta en los accidentes entre 2 vehículos de motor.
+
+```{r}
+summary(V2RMAuto.lm)
+summary(V2RMAuto.lm.step)
+```
+El modelo ajustado es igual, no cambia con el stepwise. No saco variables y los valores R2 ajustado y RSE son idénticos. Para revisar si podría tener otra respuesta, vamos a aplicar el modelo forward:
+
+```{r}
+V2RMAuto.lm.back = step(V2RMAuto.lm,direction = c("forward"),trace = F)
+summary(V2RMAuto.lm.back)
+```
+No hay cambios.
+
+```{r}
+summary(AutoSM.lm)
+summary(AutoSM.lm.step)
+```
+Los modelos tienen igual significatividad pero me quedo con el stepwise porque considera una variable menos para el análisis.
+
+```{r}
+summary(AutoAuto.lm)
+summary(AutoAuto.lm.step)
+```
+Por último, el modelo que mejor explica accidentes de un auto a otro auto es el stepwise. El R2 ajustado y el RSE son iguales pero hay 2 variables menos a considerar aquí. Otro dato interesante es que, al eliminar las variables PMPeatones y PMCiclistas, las variables PMTPublico y PNVMotor se vuelven significativas a nivel individual.
+
+Luego de haber corrido los modelos con métodos de selección, hagámoslos con modelos de regularización para tomar la decisión final:
+
+```{r}
+library(glmnet)
+XX = model.matrix(PeatAuto.lm)
+PeatAuto.lm.lasso.crossval = cv.glmnet(XX,y = SegVial3$PeatAuto.std, nfolds = 5, alpha = 1)
+PeatAuto.lm.lasso.crossval
+PeatAuto.lm.lasso.crossval$lambda.min
+PeatAuto.lm.lasso.crossval$lambda.1se
+
+PeatAuto.lm.lasso.crossval_min = glmnet(XX, y = SegVial3$PeatAuto.std, alpha = 1, lambda = PeatAuto.lm.lasso.crossval$lambda.min)
+
+PeatAuto.lm.lasso.crossval_1sd = glmnet(XX, y = SegVial3$PeatAuto.std, alpha = 1, lambda = PeatAuto.lm.lasso.crossval$lambda.1se)
+
+cbind(coef(PeatAuto.lm.lasso.crossval_min), coef(PeatAuto.lm.lasso.crossval_1sd))
+```
+Tanto con el criterio "lambda min" y "lambda min + 1se", no elimino variables, así que voy a correr la regresión para comparar resultados con los estimadores anteriores:
+
+```{r}
+PeatAuto.lm.lasso = lm(PeatAuto.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+summary(PeatAuto.lm.lasso)
+```
+Es la misma regresión de antes, por lo que sigo eligiendo el modelo stepwise. Veamos lo que ocurre con las demás variables de respuesta.
+
+```{r}
+XX2 = model.matrix(CicAuto.lm)
+CicAuto.lm.lasso.crossval = cv.glmnet(XX2,y = SegVial3$CicAuto.std, nfolds = 5, alpha = 1)
+CicAuto.lm.lasso.crossval
+CicAuto.lm.lasso.crossval$lambda.min
+CicAuto.lm.lasso.crossval$lambda.1se
+
+CicAuto.lm.lasso.crossval_min = glmnet(XX2, y = SegVial3$CicAuto.std, alpha = 1, lambda = CicAuto.lm.lasso.crossval$lambda.min)
+
+CicAuto.lm.lasso.crossval_1sd = glmnet(XX2, y = SegVial3$CicAuto.std, alpha = 1, lambda = CicAuto.lm.lasso.crossval$lambda.1se)
+
+cbind(coef(CicAuto.lm.lasso.crossval_min), coef(CicAuto.lm.lasso.crossval_1sd))
+```
+Al igual que la variable anterior, no descarta regresoras. Por ende, el modelo ajustado lasso será igual al original. Entonces, me quedo con el modelo stepwise.
+
+```{r}
+XX3 = model.matrix(V2RMSM.lm)
+V2RMSM.lm.lasso.crossval = cv.glmnet(XX3,y = SegVial3$V2RMSM.std, nfolds = 5, alpha = 1)
+V2RMSM.lm.lasso.crossval
+V2RMSM.lm.lasso.crossval$lambda.min
+V2RMSM.lm.lasso.crossval$lambda.1se
+
+V2RMSM.lm.lasso.crossval_min = glmnet(XX3, y = SegVial3$V2RMSM.std, alpha = 1, lambda = V2RMSM.lm.lasso.crossval$lambda.min)
+
+V2RMSM.lm.lasso.crossval_1sd = glmnet(XX3, y = SegVial3$V2RMSM.std, alpha = 1, lambda = V2RMSM.lm.lasso.crossval$lambda.1se)
+
+cbind(coef(V2RMSM.lm.lasso.crossval_min), coef(V2RMSM.lm.lasso.crossval_1sd))
+```
+
+```{r}
+XX4 = model.matrix(V2RMAuto.lm)
+V2RMAuto.lm.lasso.crossval = cv.glmnet(XX4,y = SegVial3$V2RMAuto.std, nfolds = 5, alpha = 1)
+V2RMAuto.lm.lasso.crossval
+V2RMAuto.lm.lasso.crossval$lambda.min
+V2RMAuto.lm.lasso.crossval$lambda.1se
+
+V2RMAuto.lm.lasso.crossval_min = glmnet(XX4, y = SegVial3$V2RMAuto.std, alpha = 1, lambda = V2RMAuto.lm.lasso.crossval$lambda.min)
+
+V2RMAuto.lm.lasso.crossval_1sd = glmnet(XX4, y = SegVial3$V2RMAuto.std, alpha = 1, lambda = V2RMAuto.lm.lasso.crossval$lambda.1se)
+
+cbind(coef(V2RMAuto.lm.lasso.crossval_min), coef(V2RMAuto.lm.lasso.crossval_1sd))
+```
+
+```{r}
+XX5 = model.matrix(AutoSM.lm)
+AutoSM.lm.lasso.crossval = cv.glmnet(XX5,y = SegVial3$AutoSM.std, nfolds = 5, alpha = 1)
+AutoSM.lm.lasso.crossval
+AutoSM.lm.lasso.crossval$lambda.min
+AutoSM.lm.lasso.crossval$lambda.1se
+
+AutoSM.lm.lasso.crossval_min = glmnet(XX5, y = SegVial3$AutoSM.std, alpha = 1, lambda = AutoSM.lm.lasso.crossval$lambda.min)
+
+AutoSM.lm.lasso.crossval_1sd = glmnet(XX5, y = SegVial3$AutoSM.std, alpha = 1, lambda = AutoSM.lm.lasso.crossval$lambda.1se)
+
+cbind(coef(AutoSM.lm.lasso.crossval_min), coef(AutoSM.lm.lasso.crossval_1sd))
+```
+Luego de analizar otras  variables de respuesta, con AutoSM me encuentro con un análisis lasso que me sugiere descartar 1 variable ("PMPeatones", según criterio lambda min) o 2 variables ("Poblacion" y "PMVMotor", según lambda min + 1se).
+
+```{r}
+AutoSM.lm.lasso_min = lm(AutoSM.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+summary(AutoSM.lm.lasso_min)
+
+AutoSM.lm.lasso_1se = lm(AutoSM.std ~ DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + Precipitacion.std + Temp.std, data = SegVial3)
+summary(AutoSM.lm.lasso_1se)
+
+summary(AutoSM.lm.step)
+```
+Entre los dos métodos lasso y el stepwise analizado inicialmente, el método de mínimo + 1se parece el más conveniente. El R2 ajustado y el RSE son muy similares pero el método elegido considera una variable menos que el stepwise ("PMVMotor").
+
+```{r}
+XX6 = model.matrix(AutoAuto.lm)
+AutoAuto.lm.lasso.crossval = cv.glmnet(XX6,y = SegVial3$AutoAuto.std, nfolds = 5, alpha = 1)
+AutoAuto.lm.lasso.crossval
+AutoAuto.lm.lasso.crossval$lambda.min
+AutoAuto.lm.lasso.crossval$lambda.1se
+
+AutoAuto.lm.lasso.crossval_min = glmnet(XX6, y = SegVial3$AutoAuto.std, alpha = 1, lambda = AutoAuto.lm.lasso.crossval$lambda.min)
+
+AutoAuto.lm.lasso.crossval_1sd = glmnet(XX6, y = SegVial3$AutoAuto.std, alpha = 1, lambda = AutoAuto.lm.lasso.crossval$lambda.1se)
+
+cbind(coef(AutoAuto.lm.lasso.crossval_min), coef(AutoAuto.lm.lasso.crossval_1sd))
+```
+Comparo ambos métodos de lasso:
+
+```{r}
+AutoAuto.lm.lasso_min = lm(AutoSM.std ~ Poblacion.std + DenPob.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMCiclistas.std + PMTPublico.std + PMVMotor.std + Precipitacion.std + Temp.std, data = SegVial3)
+summary(AutoAuto.lm.lasso_min)
+
+AutoAuto.lm.lasso_1se = lm(AutoSM.std ~ Poblacion.std + PBI.std + ArCiclista.std + ArBajaVel.std + PMPeatones.std + PMCiclistas.std + PMTPublico.std + Precipitacion.std + Temp.std, data = SegVial3)
+summary(AutoAuto.lm.lasso_1se)
+
+summary(AutoAuto.lm.step)
+```
+Me quedo con el método de 1se de lasso porque tiene menos variables que el lambda min y mucho mejor RSE que el stepwise.

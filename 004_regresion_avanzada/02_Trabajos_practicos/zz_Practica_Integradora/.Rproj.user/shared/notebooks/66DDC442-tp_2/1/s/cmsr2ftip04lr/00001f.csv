@@ -1,0 +1,4 @@
+"0",""
+"0","lines(x = AlturaGalton_m$midparentHeight, y = best_orphan_model_m$coeff[1] + "
+"0","        best_orphan_model_m$coeff[2] * AlturaGalton_m$midparentHeight,"
+"0","      col = ""red"", lwd = 3)"

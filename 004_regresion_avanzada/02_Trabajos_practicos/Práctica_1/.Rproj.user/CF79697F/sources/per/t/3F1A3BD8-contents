@@ -1,0 +1,282 @@
+---
+title: "Regresion_Práctica1"
+output: html_document
+date: '2022-07-02'
+---
+
+### Ejercicio 1
+```{r}
+florida
+summary(florida)
+dim(florida)
+
+#a) ¿Cuál es la variable dependiente e independiente?
+#La variable independiente es el ingreso y la dependiente es el consumo.
+
+
+#b) Hacer un diagrama de dispersión para los datos.
+plot(florida)
+
+
+#c) Calcular e interpretar el modelo de regresión.
+lm.florida = lm(florida$Consumo~florida$Ingreso)
+lm.florida #Este modelo tiene una variable regresora y una de respuesta. Al correr este modelo con la muestra "florida", R me devuelve los valores estimados de los parámetros b0 (ordenada al origen) y b1 (pendiente para la variable regresora consumo). El valor estimado de b0 es 3.20378 y de b1 es 0.46661.
+
+# Dar intervalos de confianza de nivel 95% para los parámetros estimados.
+summary(lm.florida)
+int_b0_inferior = lm.florida$coefficients[1] - (qt(1 - (0.05 / 2),length(florida$Consumo) - 2) * 1.84048)
+int_b0_superior = lm.florida$coefficients[1] + (qt(1 - (0.05 / 2),length(florida$Consumo) - 2) * 1.84048)
+int_b0 = c(int_b0_inferior,int_b0_superior)
+int_b0
+
+int_b1_inferior = lm.florida$coefficients[2] - (qt(1 - (0.05 / 2),length(florida$Ingreso) - 2) * 0.09297)
+int_b1_superior = lm.florida$coefficients[2] + (qt(1 - (0.05 / 2),length(florida$Ingreso) - 2) * 0.09297)
+int_b1 = c(int_b1_inferior,int_b1_superior)
+int_b1
+
+# ¿Qué dice el modelo sobre la relación consumo - ingreso?
+# Si una persona no obtiene ingresos (cuando b0 estimado es 0), tiene un nivel de consumo de $3.203,8. Por cada 1.000 dólares que gane, ese nivel de consumo crecerá en $466,6 dólares (b1 estimado es 0.4666).
+
+# ¿Qué proporción de cada dólar adicional que se gana se invierte en consumo?
+#El 46.66% de cada dólar adicional que se gana se invierte en consumo. Esa es la pendiente de la función de regresión.
+
+
+#d) ¿Qué consumo pronosticaría para alguien que tiene un ingreso de u$s27.500?
+lm.florida$coefficients[1] + (27500 * lm.florida$coefficients[2])
+# Con un ingreso de 27.500 dólares, pronostico un consumo de 12.834,87 dólares.
+
+
+#e) ¿Cuál es el error estándar de los residuos para el Departamento de Recursos Humanos de Florida State? ¿Cómo se interpretan los resultados?
+mean(florida$Consumo)
+2162 / 11780
+#El error estándar residual es 2,162. Aún si conozco los valores de b0 y b1, el consumo va a desviarse de la recta de regresión en aproximadamente 2.162 dólares. Esto representa un 18% sobre el consumo promedio de la muestra.
+
+
+#f) Calcular e interpretar el coeficiente de correlación entre el ingreso del consumidor y los niveles de consumo.
+summary(lm.florida)
+sqrt(0.7589)
+# El coeficiente de correlación entre ingreso y consumo es 0,8711. Esto quiere decir que el modelo de regresión calculado explica aproximadamente el 87% de la variabilidad total del consumo real de los consumidores.
+```
+
+### Ejercicio 2
+```{r}
+library(ISLR)
+Auto
+
+#a) Visualizar el conjunto de datos utilizando el comando fix.
+fix(Auto)
+
+
+#b) Realizar un análisis exploratorio de las variables. Decidir qué tipo de variables (cualitativas, cuantitativas), mostrar gráfica y analíticamente su vinculación.
+dim(Auto) #Hay 9 variables en la base de datos
+summary(Auto)
+#8 de las variables son cuantitativas y la restante, "name" es cualitativa.
+plot(Auto) #Esta es la demostración gráfica de las variables. Se observa que las variables que mayor relación lineal tienen son "mpg", "displacement", "horsepower" y "weight".
+plot(Auto$mpg,Auto$weight)
+plot(Auto$mpg,Auto$horsepower)
+plot(Auto$mpg,Auto$displacement)
+
+
+#c) Ajustar un modelo de regresión lineal simple para modelar la variable mpg (miles per gallon) teniendo como variable regresora aquella que consideres más adecuada del item anterior.
+lm.Auto = lm(Auto$mpg~Auto$weight) #Voy a elegir a "weight" como variable regresora para modelar mpg
+
+#i. ¿Hay una relación entre estas variables?
+lm.Auto
+plot(Auto$mpg,Auto$weight)
+summary(lm.Auto)
+#Sí, hay una relación que tiende a ser lineal entre estas 2 variables. Los puntos no están dispersos en el espacio, sino que siguen la forma de una curva.
+
+#ii. ¿Cuán fuerte es esta relación? ¿Es positiva o negativa?
+#Esta relación es negativa porque el valor estimado de b1 es negativo. Sin embargo, no es una relación tan fuerte, dado que por cada aumento en una unidad de peso, "mpg" va a disminuir solamente un 0.7%.
+
+#iii. ¿Cuál es el valor predicho para "mpg" asociado al valor mediano de la variable regresora?
+lm.Auto$coefficients[1] + (lm.Auto$coefficients[2] * median(Auto$weight)) #El valor predicho para "mpg" es 24,78.
+
+
+#d) Realizar un gráfico de dispersión para las variables y en el mismo graficar la recta de regresión ajustada. ¿Notas algún inconveniente en el gráfico?
+plot(Auto$weight,Auto$mpg)
+lines(Auto$weight,lm.Auto$coefficients[1] + lm.Auto$coefficients[2] * Auto$weight,col = "blue")
+#Cuanto menor es el peso, la variabilidad de mpg es mayor, por lo que los puntos no están tan cercanos a la recta de regresión como ocurre cuando el peso se hace mayor. La recta se ajusta menos a las observaciones.
+```
+
+### Ejercicio 3
+```{r}
+grasas
+
+#a) Realizar un análisis exploratorio de las variables. Ver cómo son las interacciones entre ellas y qué características principales se observan.
+summary(grasas) #Hay 3 variables, todas cuantitativas
+plot(grasas) #Las 3 variables parecen tener alguna relación entre sí, pero la más fuerte es entre "edad" y "grasas", que es parecida a una linealidad positiva.
+
+
+#b) Ajustar un modelo de regresión lineal simple para modelar la variable "grasas" teniendo como variable regresora aquella que consideres más adecuada del ítem anterior.
+lm.grasas = lm(grasas$grasas~grasas$edad)
+
+#i. ¿Hay una relación entre estas variables?
+summary(lm.grasas) #Sí, hay una relación entre estas 2 variables. Es una relación positiva, en la que el nivel de grasas es 5,32 veces el aumento en una unidad de la edad.
+
+#ii. ¿Cuán fuerte es esta relación? ¿Es positiva o negativa?
+#Es positiva la relación y es fuerte dado que la curva se asemeja a una recta.
+
+#iii. ¿Cuál es el valor predicho para "grasas" asociado al valor mediano de la variable regresora?
+lm.grasas$coefficients[1] + (lm.grasas$coefficients[2] * median(grasas$edad))
+#El valor predicho para "grasas" es 299,44.
+
+
+#c) Realizar un gráfico de dispersión para las variables y en el mismo graficar la recta de regresión ajustada.
+plot(grasas$edad,grasas$grasas)
+lines(grasas$edad,lm.grasas$coefficients[1] + lm.grasas$coefficients[2] * grasas$edad,col = "blue")
+
+
+#d) Dar el intervalo de confianza de nivel 0.95% para la pendiente e intercept de la recta de regresión e interpretarlo
+int_b0_inferior3 = lm.grasas$coefficients[1] - (qt(1 - (0.05 / 2),length(grasas$grasas) - 2) * 29.6376)
+int_b0_superior3 = lm.grasas$coefficients[1] + (qt(1 - (0.05 / 2),length(grasas$grasas) - 2) * 29.6376)
+int_b0_3 = c(int_b0_inferior3,int_b0_superior3)
+int_b0_3 #Si obtengo muchas muestras diferentes, espero que en el 95% de los casos el b0 sea mayor o igual a 41,27 y menor o igual a 163,89.
+
+int_b1_inferior3 = lm.grasas$coefficients[2] - (qt(1 - (0.05 / 2),length(grasas$edad) - 2) * 0.7243)
+int_b1_superior3 = lm.grasas$coefficients[2] + (qt(1 - (0.05 / 2),length(grasas$edad) - 2) * 0.7243)
+int_b1_3 = c(int_b1_inferior3,int_b1_superior3)
+int_b1_3 #Si obtengo muchas muestras diferentes, espero que en el 95% de los casos el b1 sea mayor o igual a 3,82 y menor o igual a 6,82.
+```
+
+### Ejercicio 4
+```{r}
+fracaso
+
+#a) Realizar un análisis exploratorio de los datos.
+dim(fracaso)
+summary(fracaso)
+#En la base de datos, hay 3 variables. Dos de ellas son cuantitativas y la restante, "ciudad", cualitativa. Hay 23 ciudades analizadas, las rentas brutas medias varían entre 8.86 y 22 miles de euros, y los fracasos oscilan entre 8% y 36%.
+plot(fracaso) #Entre las 3, parece haber una relación más fuerte entre "renta" y "fracaso".
+
+
+#b) Ajustar un modelo lineal para explicar el fracaso escolar en función de la renta.
+lm.fracaso = lm(fracaso$Fracaso ~ fracaso$Renta)
+summary(lm.fracaso)
+
+#c) En un diagrama de dispersión graficar los datos y la recta ajustada en el item anterior. Comentar qué se observa.
+plot(fracaso$Renta,fracaso$Fracaso)
+lines(fracaso$Renta,lm.fracaso$coefficients[1] + lm.fracaso$coefficients[2] * fracaso$Renta,col = "blue")
+#Se observa, en primer lugar, que la relación entre renta y fracaso escolar parece estar bastante bien explicada por la recta de regresión, lo que indica que hay una relación aproximadamente lineal. Los datos no están tan dispersos ni distintas de la recta. Esta relación es negativa a medida que aumenta la renta.
+
+
+#d) Calcular intervalos de confianza a nivel 0.95% para la pendiente y para el intercept. Interpretarlos.
+int_b0_inferior4 = lm.fracaso$coefficients[1] - (qt(1 - (0.05 / 2),length(fracaso$Fracaso) - 2) * 3.6445)
+int_b0_superior4 = lm.fracaso$coefficients[1] + (qt(1 - (0.05 / 2),length(fracaso$Fracaso) - 2) * 3.6445)
+int_b0_4 = c(int_b0_inferior4,int_b0_superior4)
+int_b0_4 #Si obtengo muchas muestras diferentes, espero que en el 95% de los casos el b0 sea mayor o igual a 30,92 y menor o igual a 46,07.
+
+int_b1_inferior4 = lm.fracaso$coefficients[2] - (qt(1 - (0.05 / 2),length(fracaso$Renta) - 2) * 0.2659)
+int_b1_superior4 = lm.fracaso$coefficients[2] + (qt(1 - (0.05 / 2),length(fracaso$Renta) - 2) * 0.2659)
+int_b1_4 = c(int_b1_inferior4,int_b1_superior4)
+int_b1_4 #Si obtengo muchas muestras diferentes, espero que en el 95% de los casos el b1 sea mayor o igual a -1,90 y menor o igual a -0,79.
+
+
+#e) A nivel 5%, ¿podemos afirmar que niveles más altos de renta están asociados a niveles más bajos de deserción escolar?
+summary(lm.fracaso) #Comparo p-valor para la variable "renta" con el nivel 0.05. Como el p-valor es más chico (5.138e-05), entonces podemos afirmar que niveles más altos de renta están asociaciados con deserción más baja.
+
+
+#f) ¿Cuánto vale el coeficiente de correlación entre el nivel de renta y el porcentaje de fracaso escolar?
+sqrt(0.5499) #El coeficiente de correlación entre las 2 variables vale 0.7416.
+
+
+#g) ¿Qué porcentaje de fracaso escolar se predice en una población cuya renta es x0 = 13.000 euros?
+lm.fracaso$coefficients[1] + (lm.fracaso$coefficients[2] * 13) #El porcentaje de fracaso escolar predecido es 20,99%.
+
+
+#h) ¿Cuál es el residuo correspondiente a Colmenar Viejo?
+fracaso$Fracaso[fracaso$Ciudad == "Colmenar"] - (lm.fracaso$coefficients[1] + lm.fracaso$coefficients[2] * fracaso$Renta[fracaso$Ciudad == "Colmenar"])
+#El residuo es 0,9561, la diferencia entre el valor observado para Colmenar y la recta de regresión.
+```
+
+### Ejercicio 5
+```{r}
+#a) Generar 100 datos que verifiquen la ecuación 1 con β0 = 1 y β1 = 3, con errores independientes y normales con µ = 0 y σ = 2
+funcion5 = function(muestra, beta0 = 1, beta1 = 3, mu = 0, sigma = 2){
+  return(beta0 + (beta1 * muestra) + rnorm(100,mu,sigma))
+}
+datos = sample(100, replace = T)
+yfuncion5 = funcion5(sample(100, replace = T),1,3,0,2)
+
+
+#b) Graficar estos datos.
+plot(datos,yfuncion5)
+
+
+#c) Estime los valores de β0 y β1 utilizando el método de mínimos cuadrados y guarde el resultado de βˆ0 y βˆ1 en dos vectores. En el gráfico anterior agregar en diferentes colores la recta verdadera y la recta estimada.
+lm.funcion5 = lm(yfuncion5~datos)
+summary(lm.funcion5)
+plot(datos,yfuncion5)
+curve(1 + (3 * x) + rnorm(1,0,2),from = 0, to = 100, col = "blue")
+lines(datos,lm.funcion5$coefficients[1] + lm.funcion5$coefficients[2] * datos, col = "red")
+
+
+#d) Repita los items (a) y (b) 1000 veces.
+muestra5 = matrix(rep(0,1000*100),ncol = 1000)
+for (i in 1:1000){
+  muestra5[,i] = funcion5(sample(100, replace = T),1,3,0,2)
+}
+plot(muestra5)
+
+
+#e) Estudie los resultados obtenidos. Hint: use los comandos hist, mean, var.
+apply(muestra5,2,mean)
+apply(muestra5,2,var)
+hist(apply(muestra5,2,mean), freq = F) #Los promedios parecen centrarse en los valores 150 y 155. Parecen seguir una distribución cercana a una normal (no del todo simétrica).
+hist(apply(muestra5,2,var), freq = F) #Las varianzas parecen centrarse en 7500. Parece una normal aunque menos parecida que la de los promedios.
+```
+
+### Ejercicio 6
+```{r}
+#a) Generar 100 datos que verifiquen la ecuación 1 con β0 = 1 y β1 = 3, con errores independientes y normales con μ = 0 y σ = 10.
+yfuncion6 = funcion5(sample(100, replace = T),1,3,0,10)
+yfuncion6
+
+
+#b) Graficar y comparar con el gráfico del ejercicio 5.
+plot(yfuncion5)
+plot(yfuncion6)
+#Los datos siguen siendo muy dispersos
+
+
+#c) Repetir 300 veces el item a. en todos los casos guardar las estimaciones de los parámetros.
+muestras6 = matrix(rep(0,300 * 100),ncol = 300)
+b0s = c()
+b1s = c()
+for (i in 1:300){
+  datos6 = sample(100, replace = T)
+  muestras6[,i] = funcion5(datos6,1,3,0,10)
+  b1s[i] = cor(datos6,muestras6[,i]) * (sd(muestras6[,i]) / sd(datos6))
+  b0s[i] = mean(muestras6[,i]) - (b1s[i] * mean(datos6))
+}
+
+
+#d) Estimar el desvío estándar de los estimadores de β0 y β1
+sd(b0s) #El desvío es 2.03787
+sd(b1s) #El desvío es 0.03683663
+
+
+#e) Repetir este procedimiento para σ = 1, 2, . . . , 20. Para cada valor de σ guardar el desvío estándar correspondiente.
+sds_b0 = c()
+sds_b1 = c()
+matriz_b1s = matrix(rep(0,20*300),ncol = 20)
+matriz_b0s = matrix(rep(0,20*300),ncol = 20)
+for (j in 1:20){
+  for (i in 1:300){
+    datos6 = sample(100, replace = T)
+    muestras6[,i] = funcion5(datos6,1,3,0,j)
+    matriz_b1s[i,j] = cor(datos6,muestras6[,i]) * (sd(muestras6[,i]) / sd(datos6))
+    matriz_b0s[i,j] = mean(muestras6[,i]) - (b1s[i] * mean(datos6))
+  }
+  sds_b0[j] = sd(matriz_b0s[,j])
+  sds_b1[j] = sd(matriz_b1s[,j])
+}
+
+
+#f) Hacer un gráficos de σ versus desvío estándar. ¿Qué conclusión se saca?
+plot(seq(1,20,1),sds_b0,main = "Valores de σ versus desvío estándar",xlab = "σ",ylab = "desvíos estándar",col = "green", type = "l", ylim = c(0,3))
+lines(seq(1,20,1),sds_b1,col = "orange")
+legend(x = 17, y = 1.5, c("beta0", "beta1"),fill = c("green","orange"))
+#A medida que el desvío de la muestra se agranda, eso también impacta en el desvío de los estimadores. Principalmente, porque beta0 es una función de beta1, que también es una función de los desvíos de la variable regresora y de la de respuesta.
+```
+

@@ -1,0 +1,265 @@
+---
+title: "Ejemplo Advertising"
+author: "Marcela Svarc"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Consideramos el conjunto de datos Advertising, que tiene datos sobre la inversion publicitaria en tres medios TV, Radio y Diario  y las ventas en 200 puntos de ventas. Se quiere explicar las ventas a partir de la inversion publicitaria. Estos datos se encuentran en la pagina del libro Introduction to Statistical Learning. 
+Comencemos cargando los datos
+
+```{r Advertising}
+advertising= read.csv(file = 'Advertising.csv',header = TRUE)
+attach(advertising)
+```
+
+A continuacion buscamos las medidas resumenes y hacemos los graficos.
+
+```{r Descriptiva}
+par(mfrow=c(1,3)) 
+plot(TV,sales,col="red") 
+plot(radio,sales,col="red") 
+plot(newspaper,sales,col="red") 
+summary(advertising)
+pairs(advertising[,-1])
+```
+
+Se puede ver que la inversion publicitaria en TV es la que presenta a simple vista mayor correlacion con las ventas. Que la escala de los montos invertidos en los tres medios difieren. La variabilidad de las ventas aumenta en la medida que aumenta la variabilidad en la inversion publicitaria.
+
+En base a este resultado corremos la regresion utilizando solamente la variable regreso inversion publicitaria en TV.
+
+```{r RegresionUnivariada}
+adv.tv.lm=lm(sales~TV)
+summary(adv.tv.lm) 
+#### Grafico los puntos y la recta ajustada
+par(mfrow=c(1,1))
+plot(TV,sales,col="red")
+abline(adv.tv.lm,col="blue")
+```
+
+
+Los graficos que salen por default correspondientes a la regresion son los siguientes
+
+```{r Graficos}
+par(mfrow=c(2,2))
+plot(adv.tv.lm)
+```
+
+Ahora analizamos la relacion entre las variables regresoras
+
+```{r Correlacion}
+round(cor(advertising[,-1]),3)
+```
+
+Vemos que hay una relacion moderada entre la inversion publicitaria en radio y diario. Tambien que es baja entre diario y ventas.
+
+Hacemos la regresion completa
+```{r Regresion Completa}
+adv.lm=lm(sales~TV+radio+newspaper)
+summary(adv.lm)
+```
+
+Esta misma regresion tambien la podemos hacer de otras formas. 
+```{r Regresion Completa Otra forma}
+adv.lm=lm(sales~.,data=advertising) #siempre aclarar cual es el conjunto de datos.
+```
+Regresion sin intercept
+
+```{r Regresion Completa Sin intercept}
+
+adv.lm.sinintercept=lm(sales~-1.,data=advertising)
+
+```
+
+Que tiene la salidad del comando lm
+```{r Regresion Completa Otras cosas}
+names(adv.lm)
+````
+Tambien resulta util quedarse asignar la salida del summary porque permite quedarse con otros estadisticos
+
+
+```{r Regresion Completa Summary como objeto}
+
+adv.lm.sum=summary(adv.lm)
+names(adv.lm.sum)
+```
+
+Intervalos de confianza para los estimadores de los parametros $\beta$
+
+```{r Intervalos de confianza para beta}
+
+cbind(coefficients(adv.lm), confint(adv.lm, level = 0.95))
+
+```
+Ahora hacemos test para combinaciones lineales de los parametros
+
+
+Comparamos los modelos usando las tablas de ANOVA
+
+
+
+Primero comparo  $sales=\beta_0+\beta_1TV\epsilon$ con $sales=\beta_0+\beta_1TV+\beta_2radio+\beta_3diario+\epsilon$
+y vemos que la diferencia es significativa.
+Luego comparamos el modelo completo y el modelo son la inversion publicitaria en diario
+$sales=\beta_0+\beta_1TV+\beta_2radio+\epsilon$
+y en este caso no es significativo la diferencia entre ambos. 
+
+```{r tablas de anova}
+anova(adv.tv.lm,adv.lm)
+adv.lm.nonews<-lm(sales~TV+radio)
+anova(adv.lm.nonews,adv.lm)
+```
+
+Ahora graficamos las elipses de confianza para los parametros correspondientes a TV y radio
+
+```{r elipses de confianza}
+library(ellipse)
+plot(ellipse(adv.lm, which=c(2,3), level=0.95))
+
+```
+
+Podemos ver la matriz de covarianza de los estimadores d elos parametros
+```{r matriz cov betas}
+
+round(vcov(adv.lm),2)
+
+```
+
+Nos quedamos solamente con dos variables TV y radio, para seleccionarlas usamos el criterio de Akaike
+```{r Akaike}
+step(adv.lm)
+
+```
+
+Visualizamos en 3D
+
+```{R 3d}
+library(rgl)
+plot3d(TV,radio,sales)
+```
+Explorar el comando movie para hacer peliculas con las rotaciones
+
+Hacemos ahora la regresion utilizando unicamente las variables TV y radio
+y visualizamos sus graficos
+
+```{r regresion tv y radio}
+adv.lm.2=lm(sales~TV+radio)
+summary(adv.lm.2)
+par(mfrow=c(2,2))
+plot(adv.lm.2)
+```
+
+Calculamos intervalos de confianza y de prediccion para la variable de respuesta.
+
+```{r prediccion}
+predict(adv.lm.2, newdata = data.frame(TV=100,radio=20),
+                  interval = c("confidence"), level = 0.95)
+predict(adv.lm.2, newdata = data.frame(TV=100,radio=20),
+                  interval = c("predict"), level = 0.95)
+
+```
+Graficamos los residuos estudentizados
+
+```{r residuos estudentizados}
+library(MASS)
+par(mfrow=c(1,1))
+res.adv.tv.r=studres(adv.lm.2)
+plot(adv.lm.2$fitted.values,res.adv.tv.r)
+abline(0,0)
+abline(-3,0,col="red")
+```
+
+Graficamos los residuos versus las variables resgresoras
+
+```{r residuos regresoras}
+par(mfrow=c(1,2))
+plot(TV,res.adv.tv.r)
+abline(0,0)
+abline(-3,0,col="red")
+
+plot(radio,res.adv.tv.r)
+abline(0,0)
+abline(-3,0,col="red")
+
+```
+
+La varianza parece ser estable no deberiamos tener que transformar
+la variable de respuesta, aca se confirma analizando la transformacion de box y cox
+
+
+```{r boxcox}
+ad.lm.bc=boxcox(adv.lm.2)
+```
+
+Y para analizar las posibles transformaciones en los regresores usamos la transformacion de Box-Tidwell
+
+```{r boxTidwell}
+library(car)
+#pide que las variables regresoras sean estrictamente positivas
+rad=radio+0.001 #como radio tiene minimo cero la corro un poco
+boxTidwell(sales ~ TV + rad) #pide que las variables regresoras sean estrictamente positivas
+```
+
+Transformo la variable de respuesta
+
+```{r transformoY}
+sqTV=sqrt(TV)
+adv.lm.3<-lm(sales~sqTV+radio)
+par(mfrow=c(2,2))
+plot(adv.lm.3)
+```
+Testeamos si la correlacion entre los errores es positiva 
+
+```{r DurbinWatson}
+library(lmtest)
+dwtest(adv.lm.3)
+```
+
+Analizamos el leverage
+
+```{r leverage}
+par(mfrow=c(1,1))
+plot(adv.lm.3,4)
+plot(adv.lm.3,5)
+plot(adv.lm.3,6)
+```
+
+Calculo las distancias de Cook
+
+```{r cooks}
+which((cooks.distance(adv.lm.3)>pf(3,193,0.5))==TRUE)
+
+```
+
+calculo el leverage
+
+```{r leverage2}
+which((hatvalues(adv.lm.3)>(2*3/200))==TRUE)
+
+```
+Calculamos dffits 
+
+```{r dffits}
+which(abs(dffits(adv.lm.3))>(2*sqrt(3/200)))
+```
+
+Calculamos Dfbetas 
+
+```{r dfbetas}
+which(abs(dfbetas(adv.lm.3))>(2/sqrt(200)))
+```
+
+Analizo las interacciones hacerlo con sqTV que funciona muy bien
+
+```{r inteacciones}
+plot(TV*radio,adv.lm.2$residuals)#primero hacer el grafico que me indica que las interacciones 
+adv.lm.4=lm(sales~sqTV*radio)
+summary(adv.lm.4)
+plot(adv.lm.4)
+```
+
+ 

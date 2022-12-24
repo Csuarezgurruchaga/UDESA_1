@@ -1,0 +1,4 @@
+"0","geyser_2 = geyser"
+"0","geyser_2[""cluster""]=best_gmm$classification"
+"0","geyser_2[""probabilidad_clasificacion""]=round(best_gmm$uncertainty, 3)"
+"0","geyser_2"

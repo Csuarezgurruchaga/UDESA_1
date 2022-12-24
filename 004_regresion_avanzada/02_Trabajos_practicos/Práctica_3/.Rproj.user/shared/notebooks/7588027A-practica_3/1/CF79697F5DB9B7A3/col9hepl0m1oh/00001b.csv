@@ -1,0 +1,4 @@
+"0","modelo_cerebro = lm(df$brain_wt ~ df$body_wt)"
+"0",""
+"0","par(mfrow= c(1,1))"
+"0","plot(modelo_cerebro, 2)"

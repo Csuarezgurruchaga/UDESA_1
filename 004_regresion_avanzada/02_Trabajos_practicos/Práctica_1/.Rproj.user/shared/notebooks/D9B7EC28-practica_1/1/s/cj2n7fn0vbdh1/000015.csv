@@ -1,0 +1,5 @@
+"0","fix(Auto)
+"
+"2","Error in check_for_XQuartz() : 
+  X11 library is missing: install XQuartz from xquartz.macosforge.org
+"

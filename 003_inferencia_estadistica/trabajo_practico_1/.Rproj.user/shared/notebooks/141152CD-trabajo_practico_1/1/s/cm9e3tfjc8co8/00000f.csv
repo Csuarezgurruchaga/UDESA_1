@@ -1,0 +1,8 @@
+"0","b_3 <- function(muestra) {"
+"0","  return(2 * median(muestra))"
+"0","}"
+"0","b_3(muestra)"
+"1","[1]"
+"1"," 1.079541"
+"1","
+"

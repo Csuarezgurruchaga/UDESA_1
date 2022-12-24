@@ -1,0 +1,6 @@
+"0","plot(AlturaGalton$childHeight ~ AlturaGalton$midparentHeight,"
+"0","     main = ""CHILDHEIGHT EXPLICADO POR MIDPARENTSHEIGHT"", "
+"0","     ylim = c(55, 80),"
+"0","     xlab = ""MIDPARENTHEIGHT"","
+"0","     ylab = ""CHILD HEIGHT"","
+"0","     cex = 0.2)"

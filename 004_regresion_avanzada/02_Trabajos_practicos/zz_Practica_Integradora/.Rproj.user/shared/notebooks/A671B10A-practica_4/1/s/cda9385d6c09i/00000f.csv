@@ -1,0 +1,7 @@
+"0","dias <- c(""lunes"", ""martes"", ""miercoles"", ""jueves"", ""viernes"", ""sabado"",""domingo"")"
+"0","datos$dia <- factor(datos$dia, levels = dias)"
+"0",""
+"0","datos$dia %>% "
+"0","  table() %>% "
+"0","  barplot(col = ""pink"")"
+"0",""

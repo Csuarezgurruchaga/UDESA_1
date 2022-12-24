@@ -1,0 +1,1 @@
+"0","datos <- mutate(datos, W = peso/gestacion)"

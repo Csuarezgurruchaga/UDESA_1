@@ -1,0 +1,9 @@
+"0","library(mclust)"
+"2","                   __           __ 
+   ____ ___  _____/ /_  _______/ /_
+  / __ `__ \/ ___/ / / / / ___/ __/
+ / / / / / / /__/ / /_/ (__  ) /_  
+/_/ /_/ /_/\___/_/\__,_/____/\__/   version 5.4.10
+Type 'citation(""mclust"")' for citing this R package in publications.
+"
+"0","library(MASS)"

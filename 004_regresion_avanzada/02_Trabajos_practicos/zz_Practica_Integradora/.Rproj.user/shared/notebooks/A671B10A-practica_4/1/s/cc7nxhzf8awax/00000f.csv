@@ -1,0 +1,3 @@
+"0","dias <- c(""domingo"", ""lunes"", ""martes"",""miercoles"", ""jueves"", ""viernes"", ""sabado"")"
+"0","datos$dia <- as.factor(datos$dia)"
+"0","levels(datos$dia) = dias"

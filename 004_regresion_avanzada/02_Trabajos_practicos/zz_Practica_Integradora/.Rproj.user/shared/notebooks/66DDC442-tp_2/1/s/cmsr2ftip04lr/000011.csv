@@ -1,0 +1,4 @@
+"0",""
+"0","# hombres"
+"0","points(AlturaGalton_h$childHeight ~ AlturaGalton_h$midparentHeight,"
+"0","       col = ""darkblue"", lwd = 2, cex = 0.2)"

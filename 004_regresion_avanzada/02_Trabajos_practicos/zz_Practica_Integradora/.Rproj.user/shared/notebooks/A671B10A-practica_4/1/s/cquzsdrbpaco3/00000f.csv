@@ -1,0 +1,2 @@
+"0","datos2 = datos %>% "
+"0","  filter(sexo == ""F"")"

@@ -1,0 +1,270 @@
+---
+title: "CART"
+author: "Marcela"
+date: 
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rattle)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(titanic)
+
+```
+
+Consideramos el conjunto de datos $\mathtt{titanic}$, de la libreria titanic, el mismos cuenta con diferentes variables que caracterizan a los pasageros del barco y una etiqueta $\mathtt{suvival}$ que indica si sobrevive o no.
+
+Separamos a el 75% de los datos para entrenar el modelo y los restantes para validarlo.
+```{r traintest}
+set.seed(123)
+training_sample = sample(c(TRUE, FALSE), nrow(titanic_train), replace = T, prob = c(0.75,0.25))
+train = titanic_train[training_sample, ]
+test = titanic_train[!training_sample, ]
+```
+
+
+Primero es adecuado hacer un an\'alisis exploratorio de los datos.
+```{r descriptiva}
+#Analisis en funcion del sexo.
+summary(train$Sex)
+prop.table(table(train$Sex, train$Survived))
+#la mayor parte de la mujeres viven y de los hombres mueren
+
+prop.table(table(train$Sex, train$Survived), 1)
+#miramos las distribucione marginales por sexo
+
+#Analisis en funcion de la edad.
+#Estas tablas muestran que pasa con los mayores y menores de 18 anios.
+
+summary(train$Age)
+train$Child <- 0
+train$Child[train$Age < 18] <- 1
+aggregate(Survived ~ Child + Sex, data=train, FUN=sum)
+aggregate(Survived ~ Child + Sex, data=train, FUN=length)
+aggregate(Survived ~ Child + Sex, data=train, FUN=function(x) {sum(x)/length(x)})
+
+# Analisis conjunto de clases y tarifas, estas variables necesariamente estan altamente correlacionadas
+train$Fare2 <- '30+'
+train$Fare2[train$Fare < 30 & train$Fare >= 20] <- '20-30'
+train$Fare2[train$Fare < 20 & train$Fare >= 10] <- '10-20'
+train$Fare2[train$Fare < 10] <- '<10'
+aggregate(Survived ~ Fare2 + Pclass + Sex, data=train, FUN=function(x) {sum(x)/length(x)})
+```
+Comenzamos con la clasificacion. 
+Primero hacemos un arbol corto, utilizando unicamente como variables regresoras $\mathtt{Pclas}$, $\mathtt{Sex}$ y $\mathtt{Embarked}$, las tres son categoricas, la ultima indica el puerto donde se embarco cada pasagero.
+
+```{r arbol corto}
+titanic.tree.1<- rpart(Survived ~ Pclass + Sex+ Embarked  , data=train, method="class")
+fancyRpartPlot(titanic.tree.1)
+```
+Analizamos este arbol. La primera rama tiene todos los datos y nos indica que el 62% de los pasageros muere. Ese nodo se clasifica con un cero, que indica que mueren y tiene una tasa de datos mal clasificado del 38%. Se bifurca de acuerdo a la variable $\mathtt{Sex}.$ La rama izquierda indica los hombres (65% de la poblacion), en ese caso el nodo nuevamente es clasificados como cero, en este caso, el 81% de los hombres mueren. La rama derecha tiene a las mujeres, esta nodo se clasifica como un 1, que indica que viven y la tasa de datos mal clasificados es el 27% y tiene al 35% de la poblacion. 
+
+Es claro que la tasa de clasificacion equivocada disminuye en este punto, ya que ambos nodos $\mathit{hijos}$ tienen una tasa de datos mal clasificados menor que el nodo $\mathit{madre}.$ La tasa de datos mal clasificados en este punto es
+
+$$
+0.18 \times 0.65 + 0.27  \times 0.35 = 0,2115
+$$
+
+Este procedimiento se repite ahora en cada uno de los nodos $\mathit{hijos}.$ El de los hombres es un nodo terminal, es decir que no se vuelve a bifurcar, mientras que el de las mujeres se bifurca dependiendo de la variable $\mathtt{Pclass},$ los analisis en los diferentes nodos son analogos.
+
+A continuacion, considerando mas variables llevamos a cabo el proceso de clasificacion. En primer lugar construimos el arbol maximal, que luego podamos. La funcion de $\mathit{impureza}$ que consideramos es el error de clasificacion.
+Para construir el arbol maximal involucro dos parametros, el primero es que seteo el numero minimo de observaciones para separar un nodo en 2, eso quiere decir que siempre que el nodo sea impuro voy a cortar. Podria setear este parametro en un valor mayor y/o involucrar un parametro que no permita bifurcar un nodo si una de las bifurcaciones tiene menos de un numero preestablecido de observaciones.
+Por otro lado, en el criterio de pruning, seteo la penalidad en cero ($\alpha=0$), mediante el parametro $\mathtt{cp=0},$ podriamos en este punto se un poco menos exigentes
+
+
+```{r arbol maximal}
+tit.tree.max <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train,
+             method="class", control=rpart.control(minsplit=2, cp=0))
+fancyRpartPlot(tit.tree.max)
+```
+
+
+Como vemos nos queda un arbol muy complejo, que no se puede interpretar facilmente y una de las principales ventajas de CART es su facil interpretacion. Por otra parte, este arbol sufre de sobreajuste.
+
+Buscando solucionar estos problemas, sobre todo el sobreajuste, podamos el arbol. El parametro $\alpha$ del criterio de pruning, se selecciona mediante cross validation. El valor inicial para $\mathtt{cp}$ hay que setearlo bajo.
+
+
+```{r poda}
+#Paso 1: Comenzamos con un cp bajo
+
+tit.tree.grow <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train,
+                       method="class",control = rpart.control(cp = 0.0001))
+fancyRpartPlot(tit.tree.grow)
+
+#Acá podemos ver como fueron los parametros de la cross validacion
+plotcp(tit.tree.grow)
+printcp(tit.tree.grow)
+
+#  Paso 2: Elegir el tamanio del arbol que minimice la tasa de datos mal clasificados (i.e. error de prediccion).
+# Buscamos el valor de cp que minimice xerror con el arbol mas simple.
+
+bestcp <- tit.tree.grow$cptable[which.min(tit.tree.grow$cptable[,"xerror"]),"CP"]
+
+# Paso 3: Podar el arbol maximal usando el mejor cp.
+tit.pruned <- prune(tit.tree.grow, cp = bestcp)
+
+fancyRpartPlot(tit.pruned)
+
+```
+
+Pasemos ahora a clasificar las observaciones de la muestra de testeo.
+
+
+```{r cart clasificacion}
+pred.prune = predict(tit.pruned, test, type = "class")
+
+#Matriz de confusion  (test data)
+conf.matrix <- table(test$Survived, pred.prune)
+rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```
+
+
+
+
+Cambio ahora los criterios de impureza, repetimos el analisis, como es de esperar cambian los arboles y las tasa de datos mal clasificados en consecuencia.
+
+Comenzamos considerando el criterio de $\mathtt{informacion}$
+```{r  cart information}
+tit.tree.infor=rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train,
+                       method="class",control = rpart.control(cp = 0.0001),parms = list(split= 'information'))
+bestcp <- tit.tree.infor$cptable[which.min(tit.tree.infor$cptable[,"xerror"]),"CP"]
+
+tit.pruned.infor <- prune(tit.tree.infor, cp = bestcp)
+fancyRpartPlot(tit.pruned.infor)
+```
+
+Luego el criterio de $\mathtt{gini}.$
+
+```{r cart gini}
+tit.tree.gini <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train,
+                        method="class",control = rpart.control(cp = 0.0001),parms = list(split= 'gini'))
+bestcp <- tit.tree.gini$cptable[which.min(tit.tree.gini$cptable[,"xerror"]),"CP"]
+
+tit.pruned.gini <- prune(tit.tree.gini, cp = bestcp)
+
+
+fancyRpartPlot(tit.pruned.gini)
+```
+
+Pasamos ahora a los clasificadores $\mathbf{agregados}.$
+
+Comenzamos con los $\mathbf{Bagging.}$
+En este caso consideramos muestras bootstrap de la muestra de entrenamiento, en base a las mismas construimos arboles de clasificacion, que no podamos. Estos arboles tienen bajo sesgo y alta varianza. Asignamos las observaciones a la clase mas votada, de este modo buscamos disminuir la varianza.
+
+Tenemos que llamar a la libreria $\mathtt{RandomForest}.$
+
+
+
+```{r bagging}
+library (randomForest)
+train=na.omit(train)
+#Importante que la variable de respuesta sea categorica sino hace bagging pero con regresion.
+train$Survived=as.factor(train$Survived)
+
+bag.tit =randomForest(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train,ntree=500,mtry=7, importance =TRUE)
+#mtry=7 nro de variables, al poner todas bagging es un caso particular de RF
+
+#Analizamos la salida. Nos indica la tasa de error de las observaciones out of the bag y tambien da la matriz de confusion para los mismos datos.
+bag.tit
+
+
+
+# Grafica las tasas de error globales y para cada categoria a medida que toma mas muestras bootstrap
+plot(bag.tit)
+
+
+
+# Muestra la importancia de cada variable, dependiendo del criteio de impureza considerado.
+varImpPlot(bag.tit,sort = TRUE)
+
+#Prediccion en un nuevo conjunto de datos
+
+pred.tit.bag = predict (bag.tit ,newdata =test)
+
+#confusion matrix (test data)
+conf.matrix <- table(test$Survived, pred.tit.bag)
+rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+
+```
+
+Ahora hacemos random forest, en este caso en cada nodo se seleccionan un conjunto de orden $\sqrt{p}=m$ de parametros para construir el arbol y de este modo superar el problema de la tree 
+$\mathit{tree}$  $\mathit{correlation.}$ El analisis es analogo al anterior.
+
+```{r random forest}
+#Random Forest
+rf.tit =randomForest(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train,ntree=500,mtry=2, importance =TRUE)
+#mtry=2 indica cuantas variables sorteo en cada corte.
+rf.tit
+
+
+#Grafico con los errores
+plot(rf.tit)
+
+
+#Grafico con la importancia de las variables regresoras.
+varImpPlot(rf.tit,sort = TRUE)
+
+#Prediccion en un nuevo conjunto de datos
+pred.tit.rf = predict (rf.tit ,newdata =test)
+
+#confusion matrix (test data)
+conf.matrix <- table(test$Survived, pred.tit.rf)
+rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```
+
+
+Por ultimo aplicamos $\mathbf{boosting},$ en este caso se construye una sucesion de clasificadores que en cada paso da mas peso a las observaciones mal clasificadas en el paso anterior. De esta forma busca centrarse en resolver los problemas dificiles mejorando el desempenio global.
+
+En este caso llamo a la libreria $\mathtt{C50},$ que tambien se puede usar para hacer CART
+
+```{r boosting}
+library("C50")
+train$Survived=as.factor(train$Survived)
+boost.tit <- C5.0(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare , data = train, trials = 50)
+
+boost.tit
+
+xtest=test[,-c(1,2)]
+pred= predict(boost.tit, newdata = xtest, type = "class")
+table(predicho = pred, real = test$Survived)
+
+```
+
+
+Por ultimo mostramos como hacer CART, en el caso de $\mathbf{regresion},$ para ello consideramos el conjunto de datos $\mathtt{Boston}$ de la libreria $\mathtt{ISLR}.$ Queremos predecir la variable $\mathtt{mdev}.$ El procedimiento es analogo, como criterio de impureza se toma la suma de los cuadrados de los residuos.
+
+```{r cart regresion}
+library(tree)
+library(MASS)
+data("Boston")
+
+
+train = sample (1: nrow(Boston ), nrow(Boston )/2)
+tree.boston =tree(medv~.,Boston ,subset =train)
+summary(tree.boston)
+plot(tree.boston)
+#text(tree.boston,pretty =0)
+
+
+#Ahora lo podamos, cross validando el parametro de penalidad alfa.
+
+cv.boston=cv.tree(tree.boston)
+
+plot(cv.boston$size,cv.boston$dev,type='b')
+prune.boston=prune.tree(tree.boston ,best =5)
+
+
+plot(prune.boston )
+
+#text(prune.boston ,pretty =0)
+
+```

@@ -1,0 +1,2 @@
+"0","# densidad_alta_dimension_gmm=densityMclust(data_alta_dimension)"
+"0","# plot(densidad_alta_dimension_gmm, what=""density"", data=data_alta_dimension, col = ""blue"")"

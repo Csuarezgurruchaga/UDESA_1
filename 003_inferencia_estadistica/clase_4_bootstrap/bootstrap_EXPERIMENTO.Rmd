@@ -1,0 +1,112 @@
+```{r}
+set.seed(123)
+```
+
+# CONOZCO LA F QUE GENERA MIS DATOS Y DE AHI GENERO TANTAS MUESTRAS COMO QUIERO
+
+```{r}
+lambda_verdadero = 1
+SESGO = c()
+muestra = c()
+estimador_max_verosimil = c()
+
+for(i in 1:100000) {
+  muestra = rexp(n = 10, rate = lambda_verdadero)  # distribucion G = G(F) == muestra = muestra(rexp)
+  estimador_max_verosimil[i] = 1 / mean(muestra)   # ESTIMADOR, calculado a partir de max verosimilitud
+  SESGO[i] = estimador_max_verosimil[i] - lambda_verdadero
+  }
+
+mean(SESGO)
+hist(SESGO, main = "CONOCIENDO LA FUNCION POBLACIONAL", xlab = "SESGO", col = "blue")
+hist(estimador_max_verosimil, main = "DISTRIBUCION DE MI ESTIMADOR MVS", col = "yellow") # Notamos un pequeño sesgo hacia la izquierda
+```
+
+# EXPERIMENTO BOOTSTRAP
+# NO CONOZCO LA FUNCION QUE GENERA MIS DATOS, SOLO TENGO 1 MUESTRA Y LA RESAMPLEO
+
+```{r}
+SESGO_boot = c()
+estimador_max_verosimil_boot = c()
+for(j in 1:100000) {
+  muestra_boot = sample(x = muestra, replace = TRUE) # muestras con distribucion F estimada F^
+  estimador_max_verosimil_boot[j] = 1 / mean(muestra_boot)     # ESTIMADOR 
+  SESGO_boot[j] = estimador_max_verosimil_boot[j] - 1/mean(muestra)}
+
+print(paste0("valor a estimar del lambda muestral ", 1/mean(muestra),",valor estimado ", mean(estimador_max_verosimil_boot)))
+print(paste("El sesgo boot es: ", mean(SESGO_boot)))
+hist(SESGO_boot, main = "METODO BOOTSTRAP", xlab = "SESGO DEL METODO BOOTS", col = "orange")
+hist(estimador_max_verosimil_boot, main = "DISTRIBUCION DE MI ESTIMADOR BOOT", col = "yellow", xlab = "Valor de lambda_boot estimado")
+```
+CONCLUSION: VEMOS COMO EL VALOR ESTIMADO DE LAMBDA, SE APROXIMA AL VALOR ORIGINAL LAMBDA = 1, CON UN VALOR DE LAMBDA MUESTRAL 0.78, CONSIGO UN LAMBDA ESTIMADO BOOT = 0.9. tambien observamos que un estimador es INSESGADO, cuando su distribucion es ASIMETRICA.
+
+
+
+
+
+
+#PROBEMOS CON UN ESTIMADOR INSESGADO COMO LA MEDIA
+
+```{r}
+sesgo_unif = c()
+muestra = c()
+estimador_media = c()
+
+for(i in 1:100000) {
+  muestra = runif(n = 10, min = 0 ,max = 10)  
+  estimador_media[i] = mean(muestra)   
+  sesgo_unif[i] = estimador_media[i] - 5
+  }
+
+# mean(SESGO)
+hist(sesgo_unif, main = "CONOCIENDO LA FUNCION POBLACIONAL", xlab = "SESGO", col = "blue")
+hist(estimador_media, main = "DISTRIBUCION DE MI ESTIMADOR DE MEDIA", col = "yellow") 
+```
+Concluimos que un estimador INSESGADO, su distribucion es SIMETRICA
+
+
+
+
+```{r}
+mean(SESGO) #SESGO ESTIMADOR SESGADO 
+mean(SESGO_boot) #SESGO ESTIMADOR SESGADO CALCULADO CON BOOTSTRAP 
+mean(sesgo_unif) #SESGO ESTIMADOR INSESGADO
+```
+
+
+
+
+AHORA ESTIMEMOS EL SESGO DEL METODO DE BOOTSTRAP, SIMULANDO VARIAS VECES EL PROCESO ANTERIOR Y RESTANDOSELO AL PARAMETRO QUE BOOTSTRAP QUIERE ESTIMAR
+
+```{r}
+lambda_verdadero = 1
+SESGO_boot = c()
+estimador_max_verosimil_boot = c()
+sesgos_metodos_boots = c()
+distribucion_estimaciones_boots = c()
+
+
+for(eneavo_boots in 1:10000) {
+  muestra = rexp(n = 10, rate = lambda_verdadero)
+    for(j in 1:1000) {
+      muestra_boot = sample(x = muestra, replace = TRUE) # muestras con distribucion F estimada F^
+      estimador_max_verosimil_boot[j] = 1 / mean(muestra_boot)     # ESTIMADOR 
+      SESGO_boot[j] = estimador_max_verosimil_boot[j] - 1/mean(muestra)
+      }
+  sesgos_metodos_boots[eneavo_boots] = mean(SESGO_boot)
+  distribucion_estimaciones_boots[eneavo_boots] = mean(estimador_max_verosimil_boot)
+}
+
+hist(sesgos_metodos_boots, main = "SESGOS DE LOS METODOS BOOTSTRAP", xlab = "SESGO DEL METODO BOOTS", col = "violet")
+
+hist(distribucion_estimaciones_boots, main = "DISTRIBUCION DE MI ESTIMADOR BOOT", col = "yellow", xlab = "Valor de lambda_boot estimado")
+
+abline(v = 1, col = "red") # el valor objetivo de boots es encontrar el lambda poblacional
+
+```
+```{r}
+mean(distribucion_estimaciones_boots)
+```
+
+
+
+

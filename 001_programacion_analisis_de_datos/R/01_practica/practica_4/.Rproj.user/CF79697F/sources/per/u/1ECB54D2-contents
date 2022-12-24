@@ -1,0 +1,10 @@
+---
+title: "Practico_4"
+output: html_document
+date: '2022-05-07'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+

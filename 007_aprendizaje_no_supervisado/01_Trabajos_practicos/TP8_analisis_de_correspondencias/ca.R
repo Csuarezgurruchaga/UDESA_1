@@ -1,0 +1,62 @@
+### CORRESPONCE ANALYSIS TEORICA
+
+library("FactoMineR")
+library("factoextra")
+library("gplots")
+
+## Veamos un ejemplo con datos inventados
+nenes = c(37,23,12,11)
+adultos = c(28,33,11,1)
+jubilados = c(0,0,0,44)
+turismo = data.frame(nenes = nenes, adultos=adultos, jubilados = jubilados)
+row.names(turismo) = c("playa", "aventura", "sierra", "naturaleza")
+turismo
+n = sum(turismo)
+turismo_freq = round(turismo/n,2)
+turismo_freq
+
+## Tabla bonita
+# 1. convert the data as a table
+dt = as.table(as.matrix(turismo))
+# 2. Graph
+balloonplot(t(dt), main ="Turismo", xlab ="", ylab="", dotcolor="lightgrey",
+            label = TRUE, show.margins = TRUE, cum.margins=FALSE)
+
+
+## Test chi cuadrado
+chisq.test(turismo)
+
+## CA
+turismo_ca = CA(turismo, ncp=3, graph=TRUE)
+
+# Inercia 
+turismo_ca$eig
+fviz_screeplot(turismo_ca, addlabels = TRUE)
+
+# Solo filas
+fviz_ca_row(turismo_ca, repel = TRUE)
+
+# Solo columns
+fviz_ca_col(turismo_ca, shape.row = 15)
+
+# Constribuciones de las filas
+library("corrplot")
+corrplot(turismo_ca$row$contrib, method="circle",  is.corr=FALSE, tl.col = "black", 
+         col=colorRampPalette(c("lightgrey","blue"))(200))
+
+# Constribuciones de las columnas
+corrplot(turismo_ca$col$contrib, method="circle",  is.corr=FALSE, tl.col = "black",
+         col=colorRampPalette(c("lightgrey","red"))(200))
+
+
+### EJERCICIOS:
+# Hacer un analisis de correspondencias a la tabla de premios nobels
+# Usar lo mismo para el dataset housetasks que se encuentra en la libreria factorextra.
+
+
+
+# housetasks
+
+nobel_winner_all_pubs
+
+

@@ -1,0 +1,161 @@
+---
+title: "LdaQdaNB"
+author: "Marcela"
+date: "6 de agosto de 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(tidyverse)
+library(MASS)
+library(klaR)
+```
+
+
+Comenzaremos analizando el ejemplo de la clase de los lirios.
+Tenemos 150 observaciones, 50 de cada especie, los datos con los que contamos son los anchos y largos  de los petalos y sepalos de las flores. 
+Separamos la muestra de entrenamiento, que tendra el $75\%$ de los datos y la de validacion que tiene el $25\%$ restante.
+```{r muestra de entrenamiento}
+set.seed(789)
+training_sample <- sample(c(TRUE, FALSE), nrow(iris), replace = T, prob = c(0.75,0.25))
+train <- iris[training_sample, ]
+test <- iris[!training_sample, ]
+```
+Buscamos la funcion discriminante lineal para la muestra de entrenamiento.
+
+```{r}
+# lda.iris$scaling
+```
+
+```{r lda}
+lda.iris = lda(Species ~ ., train)
+
+lda.iris$means # vector de medias para cada grupo.
+lda.iris$scaling # pesos de las hiperplanos separadores.
+
+plot(lda.iris,col=as.integer(train$Species))
+
+plot(lda.iris, dimen = 1, type = "b")
+
+
+partimat(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, data=train, method="lda")
+
+```
+Al analizar los signos y magnitudes de los pesos podemos inferir cuales son las variables mas determinantes en la clasificacion. 
+En este caso parecen ser en la primera funcion la informacion proveniente de los petalos y en la segunda los anchos de petalos y sepalos.
+
+Por otro lado se ve que \textit{setosa} se distingue facilmente de las otras dos especies que son mas dificiles de distinguir.
+
+A continuacion clasificamos en la muestra de \textit{test} y confeccionamos la matriz de confusion.
+Se puede ver que hay una observacion de \textit{virginica} clasificadas como \textit{versicolor}. Es distinto a lo que dice la transparencia porque me habia olvidado fijar la semilla.
+```{r ldaclasif}
+lda.test <- predict(lda.iris,test)
+test$lda <- lda.test$class
+table(test$lda,test$Species)
+```
+
+A continuacion realizamos el test M de Box, de homogeniedad en las matrices de covarianza. 
+
+```{r test M de Box}
+library(rstatix)
+box_m(iris[, -5], iris[, 5])
+```
+Rechazamos la hipotesis de homocedasticidad, por lo tanto, hacemos una clasificacion discriminante cuadratico y predecimos en la muestra de testeo.
+
+``` {r qda}
+qda.iris = qda(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, train)
+qda.iris #mostramos la salida
+partimat(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, data=train, method="qda")
+
+# qda.iris$scaling
+```
+En la salida se puede ver que ya no tenemos mas los pesos discriminantes. 
+
+``` {r qdapred}
+
+qda.test <- predict(qda.iris,test)
+test$qda <- qda.test$class
+table(test$qda,test$Species)
+```
+En este caso particular la clasificacion es igual al caso lineal.
+
+Pasamos ahora a clasificar mediante \textbf{Naive Bayes}, las densidades no parametricas en este caso se estiman asumiendo normalidad en los datos.
+
+```{r nb}
+library(e1071)      
+library(naivebayes) 
+
+nb.iris <- naiveBayes(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, train)
+nbiris.test <- predict(nb.iris,test)
+table(nbiris.test,test$Species)
+
+```
+
+En este caso particular, la estimacion no tiene errores.
+
+
+Pasamos ahora a calcular la sensitividad, especificidad, presicion y demas medidas de ajuste de la clasificacion.
+Lo haremos para el clasificador cuadratico que tuvo al menos un error.
+
+Hay que prestar atencion al modo en que se pone la matriz de confusion en el comando, las predicciones son las columnas.
+``` {r medidas ajuste}
+qda.test = predict(qda.iris,test)
+qdairis.test=qda.test$class
+
+tab <- table(test$Species, qdairis.test, dnn =c("Real","Predicha"))
+tab
+library(caret)
+cm.nb.iris=confusionMatrix(tab)
+cm.nb.iris
+```
+Como tenemos tres categorias muestra las medias (sensitividad, especificidad, etc) para las marginales de cada categoria.
+
+A continuacion analizaremos el ejemplo de los datos  \textbf{BreastCancer} de la libreria \textbf{mlbench,} donde se quiere clasificar (maligno/beningno) tumores de mamas de acuerdo a diversos parametros morfologicos. 
+Separo los datos en una muestra de entrenamiento (75%) y otra de testeo (25%).
+
+```{r bc}
+library(mlbench)
+data("BreastCancer")
+bc=na.omit(BreastCancer[,-1]) #saco los datos faltantes.
+
+set.seed(123)
+training_sample <- sample(c(TRUE, FALSE), nrow(bc), replace = T, prob = c(0.75,0.25))
+train <- bc[training_sample, ]
+test <- bc[!training_sample, ]
+```
+Hacemos la clasificacion con el discriminante lineal, no nos importa tanto como es la clasificacion en si misma sino ver como se grafica la curva ROC. 
+
+
+```{r bc lda}
+lda.bc <- lda(Class ~ ., train)
+lda.bc 
+```
+Predecimos en la muestra de enternamiento y construimos la matriz de confusion y analizamos los estadisticos de la prediccion. Nuevamente, al preparar la clase me olvide de fijar la semilla asi que estos resultados son diferentes a los de las transparencias.
+
+```{r bc predict}
+
+lda.test.bc <- predict(lda.bc,test)
+confusion <- table(test$Class, lda.test.bc$class, dnn = c("Real", "Predicha"))
+cm.lda.bc=confusionMatrix(confusion)
+cm.lda.bc
+```
+A continuacion buscamos la curva ROC, en el eje $x$ tenemos la 1-especificidad (falso positive rate) mientras que en el eje $y$ tenemos sensitividad (true positive rate)
+
+Ademas calculamos el area debajo de la curva.
+```{r ROC}
+library(ROCR) #tiene sentido para clasificadores binarios.
+
+#cjto de datos con predicciones y etiquetas verdaderas
+df <- data.frame(predictions= as.numeric(lda.test.bc$class),labels=as.numeric(test$Class))
+#como factores no funciona
+pred <- prediction(as.numeric(df$predictions), df$labels)
+perf <- performance(pred,"tpr","fpr")
+auc.pred <- performance(pred, measure = "auc")
+auc.pred@y.values
+plot(perf,colorize=TRUE)
+
+
+```

@@ -1,0 +1,6 @@
+"0",""
+"0","boxplot(COVID$l10muertes.permil ~ COVID$BCGf, "
+"0","        main = ""muertes por millon [log]"","
+"0","        ylab = ""log10muertes.permil"", col=c(""thistle"",""wheat""),"
+"0","        cex = 0.7, xlab = ""Estrategia de inmunizacion"", "
+"0","        names = c(""selectiva"", ""todos""))"

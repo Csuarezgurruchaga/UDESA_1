@@ -1,0 +1,4 @@
+"0",""
+"0","lines(y = varianza_to_plot_med, "
+"0","      x = seq(0.1, 1.9, 0.1), col = ""red"","
+"0","      lwd = 1)"

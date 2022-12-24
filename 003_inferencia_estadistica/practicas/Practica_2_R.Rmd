@@ -1,0 +1,119 @@
+
+```{r}
+set.seed(5)
+```
+
+
+PRACTICA 2 - INFERENCIA ESTADISTICA
+
+1a)
+```{r}
+
+dame_estadistico_normalizado <- function(muestra_normal) {
+  
+  x_raya <- mean(muestra_normal)
+  desvio_estimador_x_raya <- sd(muestra_normal) / sqrt(length(muestra_normal))
+  
+  return((x_raya - 68) / desvio_estimador_x_raya)
+}
+
+vector_estadisticos <- replicate(1000, dame_estadistico_normalizado(rnorm(n = 9, 
+                                                                          mean = 67, 
+                                                                          sd = 10)))
+
+mean(vector_estadisticos > 2.31 | vector_estadisticos < -2.31)
+```
+
+
+```{r}
+cont <- 1
+potencia <- c()
+
+for(mu in seq(65, 71, by = 0.5)) {
+  vector_estadisticos_2 <- replicate(1000, dame_estadistico_normalizado(rnorm(n = 9, mean = mu, sd = 10)))
+  potencia[cont] <- mean(vector_estadisticos_2 > 2.31 | vector_estadisticos_2 < -2.31)
+  cont <- cont + 1
+}
+```
+
+```{r}
+plot(x = seq(65, 71, by = 0.5), y = potencia, xlab = "VALORES DE mu",
+                main="FUNCION DE POTENCIA",
+                ylab = "POTENCIA DEL TEST",
+                lwd = 3, type = "l", col = "blue",
+                ylim = c(range(potencia)))
+
+abline(v = 68, col = "red", lwd = 2)
+
+legend("top", 
+       c("FUNCION DE POTENCIA DEL TEST CON H0 = 68kg",
+         "H0"),
+       fill = c("blue", "red"), cex = 1)
+```
+```{r}
+  
+dame_potencia_z = function(lambda, cant_muestras = 40) { 
+  
+  mu = (lambda - 2) / (sqrt(2/cant_muestras))
+  desvio_estimador = sqrt(lambda/2) 
+  
+  potencia_z = pnorm(q = -1.96, mean = mu, sd = desvio_estimador) + 
+              (1 - (pnorm(q = 1.96, mean = mu, sd = desvio_estimador)))
+  
+  return(potencia_z)  
+}
+
+dame_potencia_t = function(lambda, cant_muestras = 40) { 
+  
+  mu = (lambda - 2) / (sqrt(2/cant_muestras))
+  
+  potencia_t = pt(q = -2.02, df = cant_muestras-1, ncp = mu) + 
+              (1 - (pt(q = 2.02, df = cant_muestras-1, ncp = mu)))
+  
+  return(potencia_t)  
+}
+
+
+
+f = 1
+c = 1
+matriz_potencias_z = matrix(data = rep(0, 18), nrow = 3, ncol = 6, byrow = T)
+matriz_potencias_t = matrix(data = rep(0, 18), nrow = 3, ncol = 6, byrow = T)
+
+for(recorro_lambda in 0:5) {
+  for(recorro_muestra in c(40, 80, 120)){
+    matriz_potencias_z[f, c] = dame_potencia_z(lambda = recorro_lambda, 
+                                            cant_muestras = recorro_muestra)
+    matriz_potencias_t[f, c] = dame_potencia_t(lambda = recorro_lambda, 
+                                            cant_muestras = recorro_muestra)
+    f = f + 1
+  }
+  c = c + 1
+  f = 1
+}
+
+
+par(mfrow = c(1,3))
+
+plot(x = 0:5, y = matriz_potencias_z[1, ], main = "FUNCION POTENCIA n = 40",
+     xlab = "LAMBDA", ylab = "POTENCIA", type = "l", col = "red", lwd = 3)
+lines(0:5, y = matriz_potencias_t[1, ], col = "blue", lwd = 3)
+
+
+plot(x = 0:5, y = matriz_potencias_z[2, ], main = "FUNCION POTENCIA n = 80",
+     xlab = "LAMBDA", ylab = "POTENCIA", type = "l", col = "red", lwd = 3)
+lines(0:5, y = matriz_potencias_t[2, ], col = "blue", lwd = 1)
+
+
+plot(x = 0:5, y = matriz_potencias_z[3, ], main = "FUNCION POTENCIA n = 120",
+     xlab = "LAMBDA", ylab = "POTENCIA", type = "l", col = "red", lwd = 1)
+lines(0:5, y = matriz_potencias_t[3, ], col = "blue", lwd = 1)
+
+# legend("topright", 
+#        legend = c("Z", "T"),
+#        fill = c("red", "blue"), cex = 0.8)
+```
+```{r}
+
+```
+

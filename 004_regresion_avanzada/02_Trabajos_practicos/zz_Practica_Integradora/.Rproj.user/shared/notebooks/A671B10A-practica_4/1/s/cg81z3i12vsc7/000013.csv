@@ -1,0 +1,6 @@
+"0",""
+"0","print(paste0(""Nacieron "", n_masculinos, "" bebes masculinos y "", n_femeninos, "" bebes femeninos, y el genero que predomino fue el masculino""))"
+"1","[1]"
+"1"," ""Nacieron 218670 bebes masculinos y 208653 bebes femeninos, y el genero que predomino fue el masculino"""
+"1","
+"

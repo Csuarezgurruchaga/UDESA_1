@@ -1,0 +1,244 @@
+```{r}
+set.seed(123)
+```
+
+1 a)
+```{r}
+muestra <- runif(10)
+
+b_1 <- function(muestra) {
+  return(2 * mean(muestra))
+}
+
+b_1(muestra)
+```
+1 b)
+```{r}
+b_2 <- function(muestra) {
+  return(max(muestra))
+}
+b_2(muestra)
+```
+
+1 c)
+```{r}
+b_3 <- function(muestra) {
+  return(2 * median(muestra))
+}
+b_3(muestra)
+```
+2)
+```{r}
+uniform <- runif(n = 15, min = 0, max = 1)
+
+print(paste0("El resultado del estimador 1 es: ", b_1(uniform), " con un error de estimacion de : ", b_1(uniform) - 1))
+      
+print(paste0("El resultado del estimador 2 es: ", b_2(uniform), " con un error de estimacion de : ", b_2(uniform) - 1))
+
+print(paste0("El resultado del estimador 3 es: ", b_3(uniform), " con un error de estimacion de : ", b_3(uniform) - 1))
+```
+
+3)
+```{r}
+set.seed(123)
+b = 1
+
+bmv  <- replicate(1000, b_2(runif(n = 15, min = 0, max = b)))
+bmom <- replicate(1000, b_1(runif(n = 15, min = 0, max = b)))
+bmed <- replicate(1000, b_3(runif(n = 15, min = 0, max = b)))
+
+sesgo_bmv  <- mean(bmv)  - b 
+sesgo_bmom <- mean(bmom) - b 
+sesgo_bmed <- mean(bmed) - b 
+
+varianza_bmv  <- var(bmv) 
+varianza_bmom <- var(bmom)
+varianza_bmed <- var(bmed)
+
+ECM_bmv  <- varianza_bmv  + sesgo_bmv  ^ 2
+ECM_bmom <- varianza_bmom + sesgo_bmom ^ 2
+ECM_bmed <- varianza_bmed + sesgo_bmed ^ 2
+
+```
+
+4)
+```{r}
+set.seed(123)
+simulacion_mv <- function(b = 1, n = 15) {
+  estimador_b <- replicate(1000, b_2(runif(n = n, min = 0, max = b))) - b
+  return(c(mean(estimador_b) - b, var(estimador_b)))
+}
+
+simulacion_med <- function(b = 1, n = 15) {
+  estimador_b <- replicate(1000, b_3(runif(n = n, min = 0, max = b))) - b
+  return(c(mean(estimador_b) - b, var(estimador_b)))
+}
+
+simulacion_mom <- function(b = 1, n = 15) {
+  estimador_b <- replicate(1000, b_1(runif(n = n, min = 0, max = b))) - b
+  return(c(mean(estimador_b) - b, var(estimador_b)))
+}
+
+```
+5)
+```{r}
+set.seed(123)
+b <- seq(0.1, 1.9, by=0.1)
+n <- 15
+cont = 1 
+sesgo_to_plot_mv <- c(); sesgo_to_plot_med <- c(); sesgo_to_plot_mom <- c()
+
+for (i in b) {
+  sesgo_to_plot_mv[cont]  <- simulacion_mv (b = i ,n = n)[1]
+  sesgo_to_plot_med[cont] <- simulacion_med(b = i ,n = n)[1]
+  sesgo_to_plot_mom[cont] <- simulacion_mom(b = i ,n = n)[1]
+  
+  cont = cont + 1
+  
+}
+
+
+# Grafico del sesgo
+plot(y = sesgo_to_plot_mv,
+     x = seq(0.1, 1.9, 0.1) , col = "green", 
+     type = "l", lwd = 1, 
+     ylab = "ERROR COMETIDO", main = "SESGO",
+     xlab = "VALORES DE b A ESTIMAR",
+     ylim = c(min(sesgo_to_plot_med), max(sesgo_to_plot_mv)))
+
+lines(y = sesgo_to_plot_mom, x = seq(0.1, 1.9, 0.1), col = "blue",
+       lwd = 1)
+
+lines(y = sesgo_to_plot_med, x = seq(0.1, 1.9, 0.1), col = "red",
+   lwd = 1)
+
+legend("topright", c("USANDO VALOR MAXIMO", "USANDO MEDIANA", "USANDO VALOR MEDIO"),
+                  fill = c("green", "red", "blue"))
+```
+```{r}
+set.seed(123)
+cont_2 = 1 
+varianza_to_plot_mv <- c(); varianza_to_plot_med <- c(); varianza_to_plot_mom <- c()
+
+for (i in b) {
+  varianza_to_plot_mv [cont_2] <- simulacion_mv (b = i ,n = n)[2]
+  varianza_to_plot_med[cont_2] <- simulacion_med(b = i ,n = n)[2]
+  varianza_to_plot_mom[cont_2] <- simulacion_mom(b = i ,n = n)[2]
+  
+  cont_2 = cont_2 + 1
+}
+
+# Grafico de la varianza
+plot(y = varianza_to_plot_mv,
+     x = seq(0.1, 1.9, 0.1) , col = "green", 
+     type = "l", lwd = 1, 
+     ylab = "ERROR COMETIDO", main = "VARIANZA",
+     xlab = "VALORES DE b A ESTIMAR",
+     ylim = c(min(varianza_to_plot_med), max(varianza_to_plot_mv)))
+
+lines(y = varianza_to_plot_mom, 
+      x = seq(0.1, 1.9, 0.1), 
+      col = "blue",
+      lwd = 1)
+
+lines(y = varianza_to_plot_med, 
+      x = seq(0.1, 1.9, 0.1), col = "red",
+      lwd = 1)
+
+legend("topright", 
+       c("USANDO VALOR MAXIMO", "USANDO MEDIANA", "USANDO VALOR MEDIO"),
+      fill = c("green", "red", "blue"))
+```
+
+```{r}
+set.seed(123)
+ECM_to_plot_mv <- c(); ECM_to_plot_med <- c(); ECM_to_plot_mom <- c()
+cont_3 <- 1
+
+for (i in b) {
+  ECM_to_plot_mv [cont_3] <- simulacion_mv (b = i ,n = n)[2] + (simulacion_mv (b = i ,n = n)[1]) ^ 2
+  ECM_to_plot_med[cont_3] <- simulacion_med(b = i ,n = n)[2] + (simulacion_med(b = i ,n = n)[1]) ^ 2
+  ECM_to_plot_mom[cont_3] <- simulacion_mom(b = i ,n = n)[2] + (simulacion_mom(b = i ,n = n)[1]) ^ 2
+  
+  cont_3 = cont_3 + 1
+}
+# Grafico del Error cuadratico medio
+plot(y = ECM_to_plot_mv,
+     x = seq(0.1, 1.9, 0.1) , col = "green", 
+     type = "l", lwd = 1, 
+     ylab = "ERROR COMETIDO", main = "ERROR CUADRATICO MEDIO (ECM)",
+     xlab = "VALORES DE b A ESTIMAR",
+     ylim = c(min(ECM_to_plot_mv), max(ECM_to_plot_med)))
+
+lines(y = ECM_to_plot_mom, 
+      x = seq(0.1, 1.9, 0.1), col = "blue",
+      lwd = 1)
+
+lines(y = ECM_to_plot_med, 
+      x = seq(0.1, 1.9, 0.1), col = "red",
+      lwd = 1)
+
+legend("topright", 
+       c("USANDO VALOR MAXIMO", "USANDO MEDIANA", "USANDO VALOR MEDIO"),
+       fill = c("green", "red", "blue"))
+```
+Respecto al sesgo, vemos que a medida que el valor de b a estimar aumenta, el sesgo de todos los metodos de estimacion, aumenta. El metodo que mayor sesgo presenta es el que utiliza el valor maximo.
+Respecto a la varianza, vemos que el metodo que presenta la mayor varianza es el que utiliza la mediana, y a medidad que aumenta el valor a estimar de b, la varianza del estimador de b, aumenta, para todos los metodos.
+Sobre el ECM, vemos que el metodo para estimar b que menor ECM presenta es el que usa el valor medio, y a medida que voy aumentando el valor de b, el ECM de todos los metodos crece. Por lo mencionado previamente, es que utilizariamos el metodo que usa el valor medio para el calculo del estimador de b.
+
+6)
+```{r}
+set.seed(123)
+ECM_to_plot_mv <- c(); ECM_to_plot_med <- c(); ECM_to_plot_mom <- c()
+cont_4 <- 1
+n <- c(15, 30, 60, 120, 240)
+
+for (j in n) {
+  ECM_to_plot_mv [cont_4] <- simulacion_mv (n = j)[2] + (simulacion_mv (n = j)[1]) ^ 2
+  ECM_to_plot_med[cont_4] <- simulacion_med(n = j)[2] + (simulacion_med(n = j)[1]) ^ 2
+  ECM_to_plot_mom[cont_4] <- simulacion_mom(n = j)[2] + (simulacion_mom(n = j)[1]) ^ 2
+  
+  cont_4 = cont_4 + 1
+}
+# Grafico del Error cuadratico medio
+plot(y = ECM_to_plot_mv,
+     x = c(15, 30, 60, 120, 240) , col = "green", 
+     type = "l", lwd = 1, 
+     ylab = "ERROR COMETIDO", main = "ERROR CUADRATICO MEDIO (ECM)",
+     xlab = "VALORES DE MUESTRA 'n'",
+     ylim = c(0.9 * min(ECM_to_plot_med), max(ECM_to_plot_mv)))
+
+lines(y = ECM_to_plot_mom, 
+      x = c(15, 30, 60, 120, 240), col = "blue",
+      lwd = 1)
+
+lines(y = ECM_to_plot_med, 
+      x = c(15, 30, 60, 120, 240), col = "red",
+      lwd = 1)
+
+legend("topright", 
+       c("USANDO VALOR MAXIMO", "USANDO MEDIANA", "USANDO VALOR MEDIO"),
+       fill = c("green", "red", "blue"))
+
+```
+Observamos que el metodo que presenta el mayor ECM para estimar el parametro b, sigue siendo el que utiliza el valor maximo. Tambien observamos que a medida que aumenta el valor de la muestra "n", el ECM, disminuye. El calculo del estimador a partir del valor medio, sigue siendo el que menor ECM presenta, por lo cual repetiriamos la eleccion.
+7)
+```{r}
+muestra_2 <- c(0.917, 0.247, 0.384, 0.530, 0.798, 
+               0.912, 0.096, 0.684, 0.394, 20.1, 
+               0.769, 0.137, 0.352, 0.332, 0.670)
+
+b_1(muestra_2)
+b_2(muestra_2)
+b_3(muestra_2)
+```
+Si, dan valores muy distintos, especialmente el metodo que utiliza el valor maximo. Esto se debe a la gran varianza que hay en los valores que posee la muestra, el metodo del maximo, se enfoca en el valor 20.1, el cual es muy distinto a los demas valores de la misma. En menor medida, pero el mismo problema ocurre con el metodo que utiliza el valor promedio para estimar el parametro b. El mejor metodo para estimarlo, es el que utiliza la mediana, ya que no es sensible a este valor extremo, que se encuentra tan alejado de los demas (outlier).
+```{r}
+var(muestra_2)
+```
+8)
+```{r}
+
+```
+
+

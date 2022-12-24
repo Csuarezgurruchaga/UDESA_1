@@ -1,0 +1,5 @@
+"0","library(""ggplot2"")"
+"0","graf <- datos %>% select(educ, `edad madre`)"
+"0","  ggplot(graf, aes(educ, `edad madre`)) +"
+"0","  geom_boxplot() +"
+"0","  theme(axis.text.x = element_text(angle = 90, hjust=1))"

@@ -1,0 +1,7 @@
+"0","dim(datos)"
+"1","[1]"
+"1"," 427323"
+"1","     13"
+"1","
+"
+"0","names(datos) <- c(""mes"", ""dia"", ""edad madre"", ""num hijos"", ""peso ganado madre"", ""sexo"", ""apgar"",""educ"", ""visitas medicas"", ""gestacion"", ""tipo parto"", ""parto multiple"", ""peso"")"

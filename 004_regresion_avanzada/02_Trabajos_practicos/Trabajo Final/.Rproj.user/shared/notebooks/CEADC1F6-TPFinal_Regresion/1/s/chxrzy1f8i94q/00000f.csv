@@ -1,0 +1,4 @@
+"0","library(""readxl"")"
+"0","SegVial = read_excel(""/Users/hernantelechea/Downloads/Trabajo Final-20220814/SegVial.xlsx"")"
+"2","Error: `path` does not exist: ‘/Users/hernantelechea/Downloads/Trabajo Final-20220814/SegVial.xlsx’
+"

@@ -1,0 +1,2 @@
+"0","plot(2*seq(0, 2, 0.1) ~ seq(0, 2, 0.1), ylab = ""EJE Y"","
+"0","                                      xlim = c(0, 2), xlab = ""EJE X"")"

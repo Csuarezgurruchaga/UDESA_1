@@ -1,0 +1,6 @@
+"0","datos %>% "
+"0","  select(`parto multiple`, `peso ganado madre`) %>% "
+"0","  plot(col = c(""red"", ""blue"", ""yellow"",""green"", ""brown""), "
+"0","       main = ""AUMENTO DE PESO DE LA MADRE vs CANTIDAD DE BEBES"","
+"0","       xlab = ""CANTIDAD DE BEBES"","
+"0","       ylab = ""PESO GANADO [kg]"")"
